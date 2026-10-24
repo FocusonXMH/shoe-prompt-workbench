@@ -140,6 +140,10 @@ class TemplateDraft(BaseModel):
     selling_point_id: str | None = None
 
 
+class VersionName(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+
+
 class FeedbackMessage(BaseModel):
     content: str = Field(min_length=1, max_length=5000)
     reply_to: str | None = Field(default=None, max_length=100)
@@ -625,7 +629,8 @@ async def add_event(payload: EventInput, user=Depends(current_user)):
                 source='preset' if value in field.get('options',[]) else 'custom'
                 await conn.execute('''INSERT INTO shoe_workbench.field_usage(user_id,template_id,template_version,field_key,field_label,value,source)
                     VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(user_id,template_id,template_version,field_key,value)
-                    DO UPDATE SET use_count=shoe_workbench.field_usage.use_count+1,last_used=now()''',
+                    DO UPDATE SET use_count=CASE WHEN shoe_workbench.field_usage.stats_excluded THEN 1 ELSE shoe_workbench.field_usage.use_count+1 END,
+                    stats_excluded=false,last_used=now()''',
                     user[0].user_id,payload.template_id,payload.template_version,item.key,str(field.get('label',item.key))[:100],value,source)
             # Keep at most 100 short values per person and field; discard stale suggestions.
             await conn.execute('''DELETE FROM shoe_workbench.field_usage WHERE user_id=$1 AND template_id=$2 AND
@@ -641,7 +646,7 @@ async def personal_suggestions(template_id: str,version: int,user=Depends(curren
     async with app.state.db.acquire() as conn:
         rows=await conn.fetch('''SELECT field_key,value,use_count FROM shoe_workbench.field_usage
             WHERE user_id=$1 AND template_id=$2 AND template_version=$3 AND use_count>=3
-            AND source='custom' AND last_used>now()-interval '180 days' ORDER BY use_count DESC,last_used DESC LIMIT 60''',user[0].user_id,template_id,version)
+            AND NOT stats_excluded AND source='custom' AND last_used>now()-interval '180 days' ORDER BY use_count DESC,last_used DESC LIMIT 60''',user[0].user_id,template_id,version)
     return [dict(r) for r in rows]
 
 
@@ -650,42 +655,47 @@ async def usage_dashboard(days: int=30,user=Depends(current_user)):
     require_admin(user)
     if days not in (7,30,90):
         raise HTTPException(422,'invalid period')
+    scope=""" FROM shoe_workbench.events e JOIN shoe_workbench.templates t ON t.id=e.template_id
+        LEFT JOIN shoe_workbench.template_versions v ON v.template_id=e.template_id AND v.version=e.template_version
+        WHERE e.created_at>=now()-($1*interval '1 day') AND NOT e.stats_excluded
+        AND t.archived_at IS NULL AND v.deleted_at IS NULL """
     async with app.state.db.acquire() as conn:
-        totals=await conn.fetchrow('''SELECT count(DISTINCT user_id) AS active_users,
-            count(*) FILTER(WHERE event_type='template_open') AS opens,
-            count(*) FILTER(WHERE event_type='prompt_copy') AS copies,
-            count(*) FILTER(WHERE event_type='version_select') AS version_choices,
-            count(*) FILTER(WHERE event_type='favorite_add') AS favorites_added,
-            count(*) FILTER(WHERE event_type='favorite_remove') AS favorites_removed
-            FROM shoe_workbench.events WHERE created_at>=now()-($1*interval '1 day')''',days)
+        totals=await conn.fetchrow("""SELECT count(DISTINCT e.user_id) AS active_users,
+            count(*) FILTER(WHERE e.event_type='template_open') AS opens,
+            count(*) FILTER(WHERE e.event_type='prompt_copy') AS copies,
+            count(*) FILTER(WHERE e.event_type='version_select') AS version_choices,
+            count(*) FILTER(WHERE e.event_type='favorite_add') AS favorites_added,
+            count(*) FILTER(WHERE e.event_type='favorite_remove') AS favorites_removed"""+scope,days)
         online=await conn.fetchval("SELECT count(*) FROM shoe_workbench.user_profiles WHERE removed_at IS NULL AND last_seen>now()-interval '90 seconds'")
-        rows=await conn.fetch('''SELECT e.user_id,p.display_name,p.username,e.template_id,t.title,e.template_version,
+        rows=await conn.fetch("""SELECT e.user_id,
+            (SELECT display_name FROM shoe_workbench.user_profiles WHERE user_id=e.user_id) AS display_name,
+            (SELECT username FROM shoe_workbench.user_profiles WHERE user_id=e.user_id) AS username,
+            e.template_id,t.title,e.template_version,COALESCE(v.display_name,'v'||e.template_version::text) AS version_name,
             count(*) FILTER(WHERE e.event_type='template_open') AS opens,
             count(*) FILTER(WHERE e.event_type='prompt_copy') AS copies,
             count(*) FILTER(WHERE e.event_type='version_select') AS version_choices,
             count(*) FILTER(WHERE e.event_type='favorite_add') AS favorites_added,
             count(*) FILTER(WHERE e.event_type='favorite_remove') AS favorites_removed,
-            max(e.created_at) AS last_used
-            FROM shoe_workbench.events e LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=e.user_id
-            JOIN shoe_workbench.templates t ON t.id=e.template_id
-            WHERE e.created_at>=now()-($1*interval '1 day') GROUP BY e.user_id,p.display_name,p.username,e.template_id,t.title,e.template_version
-            ORDER BY copies DESC,opens DESC LIMIT 5000''',days)
-        trend=await conn.fetch('''SELECT (created_at AT TIME ZONE 'Asia/Shanghai')::date AS day,user_id,template_id,
-            count(*) FILTER(WHERE event_type='template_open') AS opens,
-            count(*) FILTER(WHERE event_type='prompt_copy') AS copies,count(DISTINCT user_id) AS users
-            FROM shoe_workbench.events WHERE created_at>=now()-($1*interval '1 day')
-            GROUP BY 1,user_id,template_id ORDER BY 1 LIMIT 20000''',days)
-        words=await conn.fetch('''SELECT u.user_id,u.template_id,t.title,u.template_version,u.field_key,u.field_label,u.value,u.source,
-            u.use_count AS uses FROM shoe_workbench.field_usage u
-            JOIN shoe_workbench.templates t ON t.id=u.template_id WHERE u.last_used>=now()-($1*interval '1 day')
-            ORDER BY uses DESC LIMIT 5000''',days)
-        favorites=await conn.fetch('''SELECT p.user_id,f.value AS template_id FROM shoe_workbench.user_preferences p
+            max(e.created_at) AS last_used"""+scope+"""
+            GROUP BY e.user_id,e.template_id,t.title,e.template_version,v.display_name
+            ORDER BY copies DESC,opens DESC LIMIT 5000""",days)
+        trend=await conn.fetch("""SELECT (e.created_at AT TIME ZONE 'Asia/Shanghai')::date AS day,e.user_id,e.template_id,
+            count(*) FILTER(WHERE e.event_type='template_open') AS opens,
+            count(*) FILTER(WHERE e.event_type='prompt_copy') AS copies,count(DISTINCT e.user_id) AS users"""+scope+"""
+            GROUP BY 1,e.user_id,e.template_id ORDER BY 1 LIMIT 20000""",days)
+        words=await conn.fetch("""SELECT u.user_id,u.template_id,t.title,u.template_version,u.field_key,u.field_label,u.value,u.source,
+            COALESCE(v.display_name,'v'||u.template_version::text) AS version_name,u.use_count AS uses
+            FROM shoe_workbench.field_usage u JOIN shoe_workbench.templates t ON t.id=u.template_id
+            LEFT JOIN shoe_workbench.template_versions v ON v.template_id=u.template_id AND v.version=u.template_version
+            WHERE u.last_used>=now()-($1*interval '1 day') AND NOT u.stats_excluded
+            AND t.archived_at IS NULL AND v.deleted_at IS NULL ORDER BY uses DESC LIMIT 5000""",days)
+        favorites=await conn.fetch("""SELECT p.user_id,f.value AS template_id FROM shoe_workbench.user_preferences p
             CROSS JOIN LATERAL jsonb_array_elements_text(CASE WHEN jsonb_typeof(p.preferences->'favorites')='array'
             THEN p.preferences->'favorites' ELSE '[]'::jsonb END) f(value)
-            JOIN shoe_workbench.templates t ON t.id=f.value WHERE t.archived_at IS NULL LIMIT 10000''')
+            JOIN shoe_workbench.templates t ON t.id=f.value WHERE t.archived_at IS NULL LIMIT 10000""")
     return {'days':days,'as_of':datetime.now(timezone.utc).isoformat(),'totals':dict(totals,online=online),'rows':[dict(r) for r in rows],
             'trend':[dict(r) for r in trend],'words':[dict(r) for r in words],'favorites':[dict(r) for r in favorites],
-            'word_scope':'累计短选项使用次数，按最近使用日期筛选；从本功能上线起记录'}
+            'word_scope':'累计短选项使用次数；已排除删除版本、归档模板和手动清理的记录'}
 
 
 @app.get('/admin/events/summary')
@@ -717,7 +727,9 @@ async def user_activity(user=Depends(current_user)):
                   FROM shoe_workbench.user_profiles p WHERE p.removed_at IS NULL AND NOT EXISTS (SELECT 1 FROM shoe_workbench.local_accounts a WHERE a.id=p.user_id)
                 UNION ALL SELECT a.id,a.username,a.display_name,a.role_code,p.last_seen,a.category,a.active
                   FROM shoe_workbench.local_accounts a LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=a.id) u
-          LEFT JOIN shoe_workbench.events e ON e.user_id=u.user_id
+          LEFT JOIN shoe_workbench.events e ON e.user_id=u.user_id AND NOT e.stats_excluded
+            AND EXISTS(SELECT 1 FROM shoe_workbench.templates t WHERE t.id=e.template_id AND t.archived_at IS NULL)
+            AND NOT EXISTS(SELECT 1 FROM shoe_workbench.template_versions v WHERE v.template_id=e.template_id AND v.version=e.template_version AND v.deleted_at IS NOT NULL)
           GROUP BY u.user_id,u.username,u.display_name,u.role_code,u.last_seen,u.category,u.active ORDER BY u.active DESC,u.last_seen DESC NULLS LAST''')
     identities={p['user_id']:p for p in shared}
     result=[]
@@ -740,6 +752,8 @@ async def user_template_activity(user=Depends(current_user)):
           count(*) FILTER (WHERE e.event_type='version_select') AS version_choices,
           max(e.created_at) AS last_used
           FROM shoe_workbench.events e LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=e.user_id
+          WHERE NOT e.stats_excluded AND EXISTS(SELECT 1 FROM shoe_workbench.templates t WHERE t.id=e.template_id AND t.archived_at IS NULL)
+            AND NOT EXISTS(SELECT 1 FROM shoe_workbench.template_versions v WHERE v.template_id=e.template_id AND v.version=e.template_version AND v.deleted_at IS NOT NULL)
           GROUP BY e.user_id,p.username,p.display_name,e.template_id,e.template_version
           ORDER BY max(e.created_at) DESC LIMIT 1000''')
     return [dict(row) for row in rows]
@@ -842,21 +856,54 @@ async def read_help_image(image_id: str, user=Depends(current_user)):
 async def templates(user=Depends(current_user)):
     async with app.state.db.acquire() as conn:
         rows = await conn.fetch('''SELECT t.id,t.selling_point_id,t.title,t.media_type,t.position,
-            v.version,v.content FROM shoe_workbench.templates t
+            v.version,v.content,COALESCE(v.display_name,'v'||v.version::text) AS version_name,v.revision FROM shoe_workbench.templates t
             JOIN shoe_workbench.template_versions v ON v.template_id=t.id AND v.version=t.published_version
             WHERE t.archived_at IS NULL ORDER BY t.position,t.id''')
     return [{'id': r['id'], 'selling_point_id': r['selling_point_id'], 'title': r['title'],
              'media_type': r['media_type'], 'position': r['position'], 'version': r['version'],
-             'content': json.loads(r['content']) if isinstance(r['content'], str) else r['content']} for r in rows]
+             'content': json.loads(r['content']) if isinstance(r['content'], str) else r['content'],
+             'version_name':r['version_name'],'revision':r['revision']} for r in rows]
 
 
 @app.get('/templates/{template_id}/versions')
 async def template_versions(template_id: str, user=Depends(current_user)):
     async with app.state.db.acquire() as conn:
-        rows = await conn.fetch('''SELECT v.version,v.content,v.published_at FROM shoe_workbench.template_versions v
+        rows = await conn.fetch('''SELECT v.version,v.content,v.published_at,COALESCE(v.display_name,'v'||v.version::text) AS version_name,v.revision FROM shoe_workbench.template_versions v
             JOIN shoe_workbench.templates t ON t.id=v.template_id WHERE v.template_id=$1 AND t.archived_at IS NULL AND v.deleted_at IS NULL
             ORDER BY v.version DESC''', template_id)
-    return [{'version': row['version'], 'content': json_value(row['content']), 'published_at': row['published_at']} for row in rows]
+    return [{'version': row['version'], 'content': json_value(row['content']), 'published_at': row['published_at'],
+             'version_name':row['version_name'],'revision':row['revision']} for row in rows]
+
+
+@app.patch('/admin/templates/{template_id}/versions/{version}')
+async def rename_template_version(template_id: str,version: int,payload: VersionName,user=Depends(current_user)):
+    require_admin(user)
+    name=payload.name.strip()
+    if not name:
+        raise HTTPException(422,'请输入版本名称')
+    async with app.state.db.acquire() as conn:
+        async with conn.transaction():
+            if not await conn.fetchval('SELECT id FROM shoe_workbench.templates WHERE id=$1 AND archived_at IS NULL FOR UPDATE',template_id):
+                raise HTTPException(404,'template not found')
+            duplicate=await conn.fetchval("SELECT EXISTS(SELECT 1 FROM shoe_workbench.template_versions WHERE template_id=$1 AND version<>$2 AND deleted_at IS NULL AND lower(COALESCE(display_name,'v'||version::text))=lower($3))",template_id,version,name)
+            if duplicate:
+                raise HTTPException(409,'该模板已有同名版本，请修改名称')
+            result=await conn.fetchval('UPDATE shoe_workbench.template_versions SET display_name=$3,updated_at=now() WHERE template_id=$1 AND version=$2 AND deleted_at IS NULL RETURNING version',template_id,version,name)
+            if result is None:
+                raise HTTPException(404,'version not found')
+    return {'version':version,'version_name':name}
+
+
+@app.post('/admin/templates/{template_id}/usage/reset')
+async def reset_template_usage(template_id: str,version: int | None=None,user=Depends(current_user)):
+    require_admin(user)
+    async with app.state.db.acquire() as conn:
+        async with conn.transaction():
+            if not await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.templates WHERE id=$1)',template_id):
+                raise HTTPException(404,'template not found')
+            await conn.execute('UPDATE shoe_workbench.events SET stats_excluded=true WHERE template_id=$1 AND ($2::integer IS NULL OR template_version=$2)',template_id,version)
+            await conn.execute('UPDATE shoe_workbench.field_usage SET stats_excluded=true WHERE template_id=$1 AND ($2::integer IS NULL OR template_version=$2)',template_id,version)
+    return {'cleared':True,'version':version}
 
 
 @app.delete('/admin/templates/{template_id}/versions/{version}')
@@ -930,7 +977,7 @@ async def save_template_draft(template_id: str, payload: TemplateDraft, user=Dep
 
 
 @app.post('/admin/templates/{template_id}/publish')
-async def publish_template(template_id: str, user=Depends(current_user)):
+async def publish_template(template_id: str, update_current: bool=False,user=Depends(current_user)):
     require_admin(user)
     async with app.state.db.acquire() as conn:
         async with conn.transaction():
@@ -941,14 +988,26 @@ async def publish_template(template_id: str, user=Depends(current_user)):
                 raise HTTPException(409, 'template has no draft')
             draft = json.loads(row['draft']) if isinstance(row['draft'], str) else row['draft']
             validate_template_content(draft['content'], publish=True)
-            version = (row['published_version'] or 0) + 1
-            await conn.execute('''INSERT INTO shoe_workbench.template_versions
-                (template_id,version,content,published_by) VALUES($1,$2,$3::jsonb,$4)''',
-                template_id, version, json.dumps(draft['content'], ensure_ascii=False), user[0].user_id)
+            if update_current:
+                version=row['published_version']
+                if not version:
+                    raise HTTPException(409,'首次发布请使用发布新版本')
+                old=await conn.fetchrow('SELECT content,revision FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=$2 FOR UPDATE',template_id,version)
+                await conn.execute('''INSERT INTO shoe_workbench.version_revisions(template_id,version,revision,content,changed_by)
+                    VALUES($1,$2,$3,$4::jsonb,$5) ON CONFLICT DO NOTHING''',template_id,version,old['revision'],json.dumps(json_value(old['content']),ensure_ascii=False),user[0].user_id)
+                await conn.execute('UPDATE shoe_workbench.template_versions SET content=$3::jsonb,revision=revision+1,updated_at=now() WHERE template_id=$1 AND version=$2',template_id,version,json.dumps(draft['content'],ensure_ascii=False))
+            else:
+                version = (row['published_version'] or 0) + 1
+                labels=await conn.fetch("SELECT COALESCE(display_name,'v'||version::text) AS name FROM shoe_workbench.template_versions WHERE template_id=$1 AND deleted_at IS NULL",template_id)
+                next_name='v'+str(max([int(r['name'][1:]) for r in labels if re.fullmatch(r'v[0-9]+',r['name'])]+[0])+1)
+                await conn.execute('''INSERT INTO shoe_workbench.template_versions
+                    (template_id,version,content,published_by,display_name) VALUES($1,$2,$3::jsonb,$4,$5)''',
+                    template_id, version, json.dumps(draft['content'], ensure_ascii=False), user[0].user_id,next_name)
             await conn.execute('''UPDATE shoe_workbench.templates SET published_version=$2,
                 title=$3,media_type=$4,selling_point_id=$5,updated_at=now() WHERE id=$1''',
                 template_id, version, draft['title'], draft['media_type'], draft.get('selling_point_id'))
-    return {'id': template_id, 'version': version}
+            meta=await conn.fetchrow("SELECT COALESCE(display_name,'v'||version::text) AS version_name,revision FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=$2",template_id,version)
+    return {'id': template_id, 'version': version,'version_name':meta['version_name'],'revision':meta['revision'],'updated_current':update_current}
 
 
 @app.post('/feedback', status_code=201)

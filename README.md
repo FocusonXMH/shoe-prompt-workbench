@@ -17,7 +17,7 @@ shoe-prompt-workbench/
 ├─ .gitignore                排除凭据、图片、数据备份与运行文件
 ├─ frontend/                 当前线上网页：index.html、cloud-api.js、prompt-data.js
 ├─ backend/                  FastAPI 接口、共享身份验证、权限、账号管理、依赖
-├─ migrations/               001—014 工作台数据库结构迁移
+├─ migrations/               001—015 工作台数据库结构迁移
 ├─ deploy/                   systemd、Nginx、备份、共享身份授权脚本
 ├─ tests/                    单元测试及需人工授权执行的在线集成测试
 ├─ docs/                     中文数据、账号、部署、设计和验收说明
@@ -32,6 +32,7 @@ shoe-prompt-workbench/
 - [设计原则和未完成验收](docs/设计与验收.md)
 - [仓库授权与其他系统接入](docs/授权与对接.md)
 - [线上源码校验](docs/线上源码基线.md)
+- [版本名称与微调发布](docs/版本名称与微调发布.md)
 
 ## 当前真实部署
 

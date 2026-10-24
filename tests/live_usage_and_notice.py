@@ -46,9 +46,32 @@ async def main():
             assert [v['version'] for v in versions]==[2]
             assert await db.fetchval('SELECT deleted_at IS NOT NULL FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=1',tid)
             dashboard=await ok(await admin.get('/admin/usage-dashboard?days=30'))
-            assert any(r['template_id']==tid and r['template_version']==1 and r['copies']==3 for r in dashboard['rows'])
-            assert (await ok(await admin.post('/admin/templates/'+tid+'/publish')))['version']==3
-            print('PASS: admin-only version soft-delete; current version protected; stats retained; direct publish creates v3')
+            assert not any(r['template_id']==tid and r['template_version']==1 for r in dashboard['rows'])
+            assert await db.fetchval("SELECT count(*) FROM shoe_workbench.events WHERE template_id=$1 AND template_version=1",tid)==3
+            assert (await person.patch('/admin/templates/'+tid+'/versions/2',json={'name':'v1'})).status_code==403
+            await ok(await admin.patch('/admin/templates/'+tid+'/versions/2',json={'name':'v1'}))
+            assert (await ok(await admin.get('/templates/'+tid+'/versions')))[0]['version_name']=='v1'
+            published=await ok(await admin.post('/admin/templates/'+tid+'/publish'))
+            assert published['version']==3 and published['version_name']=='v2'
+            assert (await admin.patch('/admin/templates/'+tid+'/versions/3',json={'name':'v1'})).status_code==409
+            content['body']='场景调整：【场景】'
+            await ok(await admin.put('/admin/templates/'+tid+'/draft',json={'title':'临时统计验收模板','media_type':'image','content':content}))
+            updated=await ok(await admin.post('/admin/templates/'+tid+'/publish?update_current=true'))
+            assert updated['version']==3 and updated['version_name']=='v2' and updated['revision']==2
+            assert len(await ok(await admin.get('/templates/'+tid+'/versions')))==2
+            assert await db.fetchval('SELECT count(*) FROM shoe_workbench.version_revisions WHERE template_id=$1',tid)==1
+            assert (await person.post('/admin/templates/'+tid+'/usage/reset')).status_code==403
+            await ok(await admin.post('/admin/templates/'+tid+'/usage/reset?version=2'))
+            dashboard=await ok(await admin.get('/admin/usage-dashboard'))
+            assert not any(r['template_id']==tid and r['template_version']==2 for r in dashboard['rows'])
+            await ok(await person.post('/events',json={'event_type':'prompt_copy','template_id':tid,'template_version':2,'field_values':[{'key':'0','value':'草坪运动'}]}))
+            dashboard=await ok(await admin.get('/admin/usage-dashboard'))
+            assert next(r for r in dashboard['rows'] if r['template_id']==tid and r['template_version']==2)['copies']==1
+            assert next(r for r in dashboard['words'] if r['template_id']==tid and r['template_version']==2)['uses']==1
+            await ok(await admin.post('/admin/templates/'+tid+'/archive'))
+            dashboard=await ok(await admin.get('/admin/usage-dashboard'))
+            assert not any(r['template_id']==tid for r in dashboard['rows']+dashboard['trend']+dashboard['words'])
+            print('PASS: rename labels, update current revision, duplicate label rejection, deleted/archive exclusion and reset/recount; raw history retained')
             await ok(await admin.put('/admin/announcements/'+nid,json={'title':'临时验收公告','content':'公告正文','status':'published'}))
             await ok(await person.post('/announcements/'+nid+'/read',json={'method':'opened'}))
             await ok(await person.post('/announcements/'+nid+'/read',json={'method':'marked_read'}))
