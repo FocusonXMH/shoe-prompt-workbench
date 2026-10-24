@@ -1,0 +1,22 @@
+[Unit]
+Description=Shoe prompt workbench isolated backend
+After=network.target postgresql.service cpo-console.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/shoe-workbench-staging/backend
+EnvironmentFile=/home/ubuntu/shoe-workbench-staging/database.env
+Environment=SHOE_UPLOAD_DIR=/home/ubuntu/shoe-workbench-staging/uploads
+Environment=SHOE_FRONTEND_DIR=/home/ubuntu/shoe-workbench-staging/cloud-frontend
+ExecStart=/home/ubuntu/shoe-workbench-staging/.venv312/bin/python -m uvicorn app:app --host 127.0.0.1 --port 18808 --no-access-log
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/ubuntu/shoe-workbench-staging/uploads
+
+[Install]
+WantedBy=multi-user.target

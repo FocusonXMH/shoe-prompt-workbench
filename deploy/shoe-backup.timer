@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily shoe workbench backup
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=20m
+
+[Install]
+WantedBy=timers.target

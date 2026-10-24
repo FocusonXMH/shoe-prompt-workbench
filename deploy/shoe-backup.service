@@ -1,0 +1,13 @@
+[Unit]
+Description=Private shoe workbench backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+EnvironmentFile=/home/ubuntu/shoe-workbench-staging/database.env
+ExecStart=/home/ubuntu/shoe-workbench-staging/.venv312/bin/python /home/ubuntu/shoe-workbench-staging/backup.py
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
