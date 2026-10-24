@@ -30,6 +30,7 @@
     templates: () => request('/templates'),
     adminTemplates: () => request('/admin/templates'),
     versions: id => request('/templates/' + pathId(id) + '/versions'),
+    deleteVersion: (id, version) => request('/admin/templates/' + pathId(id) + '/versions/' + Number(version), { method: 'DELETE' }),
     draft: id => request('/admin/templates/' + pathId(id) + '/draft'),
     saveDraft: (id, value) => request('/admin/templates/' + pathId(id) + '/draft', { method: 'PUT', body: json(value) }),
     publish: id => request('/admin/templates/' + pathId(id) + '/publish', { method: 'POST' }),

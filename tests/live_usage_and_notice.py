@@ -39,6 +39,16 @@ async def main():
             assert {r['template_version']:r['copies'] for r in rows}=={1:3,2:1}
             assert any(r['template_id']==tid and r['value']=='草坪运动' and r['uses']==3 for r in dashboard['words'])
             assert (await person.get('/admin/usage-dashboard')).status_code==403
+            assert (await person.delete('/admin/templates/'+tid+'/versions/1')).status_code==403
+            assert (await admin.delete('/admin/templates/'+tid+'/versions/2')).status_code==409
+            await ok(await admin.delete('/admin/templates/'+tid+'/versions/1'))
+            versions=await ok(await admin.get('/templates/'+tid+'/versions'))
+            assert [v['version'] for v in versions]==[2]
+            assert await db.fetchval('SELECT deleted_at IS NOT NULL FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=1',tid)
+            dashboard=await ok(await admin.get('/admin/usage-dashboard?days=30'))
+            assert any(r['template_id']==tid and r['template_version']==1 and r['copies']==3 for r in dashboard['rows'])
+            assert (await ok(await admin.post('/admin/templates/'+tid+'/publish')))['version']==3
+            print('PASS: admin-only version soft-delete; current version protected; stats retained; direct publish creates v3')
             await ok(await admin.put('/admin/announcements/'+nid,json={'title':'临时验收公告','content':'公告正文','status':'published'}))
             await ok(await person.post('/announcements/'+nid+'/read',json={'method':'opened'}))
             await ok(await person.post('/announcements/'+nid+'/read',json={'method':'marked_read'}))

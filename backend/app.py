@@ -854,9 +854,26 @@ async def templates(user=Depends(current_user)):
 async def template_versions(template_id: str, user=Depends(current_user)):
     async with app.state.db.acquire() as conn:
         rows = await conn.fetch('''SELECT v.version,v.content,v.published_at FROM shoe_workbench.template_versions v
-            JOIN shoe_workbench.templates t ON t.id=v.template_id WHERE v.template_id=$1 AND t.archived_at IS NULL
+            JOIN shoe_workbench.templates t ON t.id=v.template_id WHERE v.template_id=$1 AND t.archived_at IS NULL AND v.deleted_at IS NULL
             ORDER BY v.version DESC''', template_id)
     return [{'version': row['version'], 'content': json_value(row['content']), 'published_at': row['published_at']} for row in rows]
+
+
+@app.delete('/admin/templates/{template_id}/versions/{version}')
+async def delete_template_version(template_id: str, version: int, user=Depends(current_user)):
+    require_admin(user)
+    async with app.state.db.acquire() as conn:
+        async with conn.transaction():
+            current = await conn.fetchrow('SELECT published_version FROM shoe_workbench.templates WHERE id=$1 AND archived_at IS NULL FOR UPDATE', template_id)
+            if current is None:
+                raise HTTPException(404, 'template not found')
+            if version == current['published_version']:
+                raise HTTPException(409, '当前发布版本不能删除，请先发布替代版本')
+            removed = await conn.fetchval('''UPDATE shoe_workbench.template_versions SET deleted_at=now(),deleted_by=$3
+                WHERE template_id=$1 AND version=$2 AND deleted_at IS NULL RETURNING version''',template_id,version,user[0].user_id)
+            if removed is None:
+                raise HTTPException(404, '版本不存在或已删除')
+    return {'deleted': True, 'version': version}
 
 
 @app.get('/admin/templates/{template_id}/draft')

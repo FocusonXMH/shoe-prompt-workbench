@@ -219,7 +219,14 @@
 
     /* Composer */
     .back-line { display:flex;align-items:center;gap:10px;margin-bottom:18px; }
-    .composer-layout { display:grid;grid-template-columns:minmax(340px,.82fr) minmax(460px,1.18fr);gap:18px;align-items:start; }
+    .composer-layout { display:grid;grid-template-columns:minmax(300px,var(--composer-width,41%)) minmax(320px,1fr);gap:18px;align-items:start; }
+    .composer-layout > * { min-width:0; }
+    #composerForm { position:relative; }
+    .composer-resize { position:absolute;right:-17px;top:24px;bottom:24px;width:15px;cursor:col-resize;touch-action:none;display:flex;align-items:center;justify-content:center;color:var(--muted);border-radius:8px; }
+    .composer-resize::before { content:'⋮'; }
+    .composer-resize:hover,.composer-resize:focus-visible { background:var(--brand-2);outline:1px solid var(--line); }
+    .real-issue > p { white-space:pre-wrap;overflow-wrap:anywhere; }
+    @media(max-width:980px) { .composer-resize { display:none; } }
     .form-card,.result-card { padding:21px; }
     .form-card { display:grid;gap:20px; }
     .form-section { border-bottom:1px solid var(--line);padding-bottom:19px; }
@@ -472,6 +479,7 @@
         </div>
         <div class="composer-layout">
           <form class="card form-card" id="composerForm">
+            <span id="composerResize" class="composer-resize" role="separator" aria-orientation="vertical" aria-label="左右拖动调整填写与结果区域宽度，方向键也可调整" tabindex="0" title="左右拖动调整填写与结果区宽度；双击恢复默认"></span>
             <div id="dynamicComposerFields" class="dynamic-form hidden"></div>
             <div id="legacyComposerFields">
             <div class="form-section"><h3 class="required-dot">鞋子类型 / 穿着对象</h3><div class="chip-row" data-chip-group="shoeType"></div><div class="choice-input"><select class="select" id="shoeTypeSelect"><option value="">选择常用项</option><option>女鞋</option><option>男鞋</option><option>女童鞋</option><option>男童鞋</option><option>男女通用童鞋</option></select><input class="input" id="shoeTypeCustom" placeholder="也可自定义，如：3~4岁男童鞋"></div></div>
@@ -648,7 +656,7 @@
 
   <div class="toast-stack" id="toastStack"></div>
   <script src="prompt-data.js"></script>
-  <script src="cloud-api.js?v=20261024-chart-submit"></script>
+  <script src="cloud-api.js?v=20261024-layout-indent-history"></script>
   <script>
     (function(){
       'use strict';
@@ -915,6 +923,7 @@
       }
       function openComposer(id,useDraft,versionSnapshot){
         const live=findTemplate(id);if(!live)return;const t=versionSnapshot?Object.assign({},live,clone(versionSnapshot),{sourceKey:null}):useDraft&&live.draft?Object.assign({},live,clone(live.draft),{sourceKey:null}):live;state.activeTemplate=id;state.activeTemplateData=t;state.previewingDraft=!!useDraft;
+        document.querySelector('.composer-layout').style.removeProperty('--composer-width');try{const saved=Number(localStorage.getItem(composerWidthKey()));if(saved>0)requestAnimationFrame(function(){setComposerWidth(saved,false);});}catch(e){}
         const recent=userList('recent').filter(function(r){return r.id!==id;});recent.unshift({id:id,time:new Date().toISOString()});data.recent[currentUserKey()]=recent.slice(0,12);recordEvent('template_view',{templateId:id,version:t.version||0});
         $('composerBack').textContent=useDraft?'← 返回模板编辑':'← 返回模板库';$('composerTitle').textContent=t.title;$('composerDesc').textContent=t.description;$('composerBadge').textContent=t.pointId==='general'?'通用模板':(data.points.find(function(p){return p.id===t.pointId;})||{}).name||'卖点模板';
         $('composerBreadcrumb').textContent=t.title;
@@ -1102,7 +1111,6 @@
         const snapshot=collectEditor(),t=findTemplate(state.editingTemplate);if(!snapshot||!snapshot.title||!snapshot.body){toast('请填写模板名称与正文');return;}
         const spots=scanBracketPositions(snapshot.body),configured=new Set((snapshot.bracketFields||[]).map(function(f){return Number(f.index);})),pending=spots.filter(function(s){return !configured.has(s.index);});
         if(publish&&pending.length){toast('还有 '+pending.length+' 个【】位置未人工确认');renderBracketStudio(t);return;}
-        if(publish&&snapshot.bracketFields.length&&!t.draftTested){toast('请先点击“前台试填”，确认字段与输出后再发布');return;}
         try{
           await ShoeCloud.saveDraft(t.id,{title:snapshot.title,media_type:snapshot.type,selling_point_id:snapshot.pointId==='general'?null:snapshot.pointId,content:snapshot});
           if(publish){const result=await ShoeCloud.publish(t.id);Object.assign(t,snapshot,{status:'published',sourceKey:null,version:result.version});delete t.draft;delete t.draftTested;$('editVisibility').value='published';}
@@ -1114,8 +1122,9 @@
         const t=findTemplate(id||state.activeTemplate||state.editingTemplate);if(!t){toast('暂无模板历史');return;}
         try{const versions=await ShoeCloud.versions(t.id);data.versions[t.id]=versions.map(function(v){return Object.assign({},v.content,{version:v.version,date:v.published_at,note:'已发布版本'});});}catch(err){toast('版本历史加载失败');return;}
         const list=data.versions[t.id]||[];
-        $('historyList').innerHTML=list.length?list.map(function(v){return '<div class="history-item"><div class="history-item-head"><strong>版本 v'+v.version+'</strong><span class="badge">'+escapeHtml(v.date)+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+'</p><div style="display:flex;gap:8px"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button>':'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
+        $('historyList').innerHTML=list.length?list.map(function(v){return '<div class="history-item"><div class="history-item-head"><strong>版本 v'+v.version+'</strong><span class="badge">'+escapeHtml(v.date)+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+'</p><div style="display:flex;gap:8px"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button>'+(Number(v.version)!==Number(t.version)?'<button class="btn danger-btn delete-version" data-template="'+t.id+'" data-version="'+v.version+'">删除版本</button>':'<small class="muted">当前发布版本</small>'):'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
         $('historyDrawer').classList.add('open');
+        qsa('.delete-version').forEach(function(button){button.onclick=async function(){if(!button.dataset.confirmDelete){button.dataset.confirmDelete='1';button.textContent='确认删除 v'+button.dataset.version;const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='取消';cancel.onclick=function(){delete button.dataset.confirmDelete;button.textContent='删除版本';cancel.remove();};button.after(cancel);return;}button.disabled=true;try{await ShoeCloud.deleteVersion(button.dataset.template,button.dataset.version);await openHistory(button.dataset.template);toast('历史版本已删除，已有统计和反馈保留');}catch(err){button.disabled=false;const message=document.createElement('p');message.className='reply-error';message.textContent=err.message||'删除失败，请重试';button.closest('.history-item').appendChild(message);}};});
         qsa('.use-version').forEach(function(btn){btn.addEventListener('click',function(){const ver=(data.versions[btn.dataset.template]||[]).find(function(v){return String(v.version)===btn.dataset.version;});if(ver){const original=findTemplate(btn.dataset.template);openComposer(original.id,false,ver);$('historyDrawer').classList.remove('open');recordEvent('version_select',{templateId:original.id,version:ver.version});toast('已载入旧版本，可继续填写');}});});
         qsa('.restore-version').forEach(function(btn){btn.addEventListener('click',async function(){const t=findTemplate(btn.dataset.template),ver=(data.versions[t.id]||[]).find(function(v){return String(v.version)===btn.dataset.version;});if(ver){const draft=Object.assign({},clone(ver),{title:ver.title||t.title,type:ver.type||t.type,pointId:ver.pointId||t.pointId,body:ver.body,fields:clone(ver.fields||[]),bracketFields:clone(ver.bracketFields||[]),updated:new Date().toISOString().slice(0,10)});try{await ShoeCloud.saveDraft(t.id,{title:draft.title,media_type:draft.type,selling_point_id:draft.pointId==='general'?null:draft.pointId,content:draft});t.draft=draft;t.draftTested=false;$('historyDrawer').classList.remove('open');openEditor(t.id);toast('旧版已恢复为云端草稿');}catch(err){toast('恢复草稿失败');}}});});
       }
@@ -1176,8 +1185,8 @@
           composer.querySelector('.reply-upload').onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();}};
           composer.addEventListener('paste',function(e){const files=Array.from((e.clipboardData&&e.clipboardData.items)||[]).filter(function(x){return x.kind==='file'&&['image/png','image/jpeg'].includes(x.type);}).map(function(x){return x.getAsFile();}).filter(Boolean);if(!files.length)return;e.preventDefault();e.stopPropagation();const all=Array.from(input.files).concat(files);if(all.length>6){error.textContent='每次回复最多添加 6 张图片';return;}try{const dt=new DataTransfer();all.forEach(function(f){dt.items.add(f);});input.files=dt.files;preview();}catch(e){error.textContent='请点击添加图片选择截图';}});
           send.onclick=async function(){
-            const text=textBox.value.trim(),files=Array.from(input.files);error.textContent='';
-            if(!text&&!files.length){error.textContent='请输入回复或添加图片';return;}
+            const text=textBox.value.trimEnd(),files=Array.from(input.files);error.textContent='';
+            if(!text.trim()&&!files.length){error.textContent='请输入回复或添加图片';return;}
             if(files.length>6||files.some(function(f){return !['image/png','image/jpeg'].includes(f.type)||f.size>10*1024*1024;})){error.textContent='最多 6 张 PNG、JPEG 图片，每张不超过 10 MB';return;}
             send.disabled=true;
             try{
@@ -1344,7 +1353,15 @@
         $('seasonChips').innerHTML=seasons.map(function(s){return '<button type="button" class="chip" data-target="seasonInput">'+s+'</button>';}).join('');
         qsa('.chip[data-target]').forEach(function(chip){chip.addEventListener('click',function(){const input=$(chip.dataset.target);if(chip.classList.contains('active')){chip.classList.remove('active');if(input.value===chip.textContent)input.value='';}else{qsa('.chip[data-target="'+chip.dataset.target+'"]').forEach(function(x){x.classList.remove('active');});chip.classList.add('active');input.value=chip.textContent;}});});
       }
+      function composerWidthKey(){return 'shoe-composer-width:'+currentUserKey();}
+      function setComposerWidth(percent,persist){const layout=document.querySelector('.composer-layout');const width=layout.clientWidth,min=width>0?300/width*100:25,max=width>0?(width-338)/width*100:70;const value=Math.max(min,Math.min(max,percent));layout.style.setProperty('--composer-width',value+'%');$('composerResize').setAttribute('aria-valuenow',Math.round(value));if(persist)try{localStorage.setItem(composerWidthKey(),String(value));}catch(e){} }
+      function installTextIndent(){document.addEventListener('keydown',function(e){const input=e.target;if(e.key!=='Tab'||e.ctrlKey||e.metaKey||e.altKey||!(input instanceof HTMLTextAreaElement)||input.readOnly||input.disabled)return;e.preventDefault();const start=input.selectionStart,end=input.selectionEnd,value=input.value,scroll=input.scrollTop;if(!e.shiftKey&&start===end){input.setRangeText('  ',start,end,'end');}else{const from=value.lastIndexOf('\n',start-1)+1,to=end>start&&value[end-1]==='\n'?end-1:end;const block=value.slice(from,to);const changed=block.split('\n').map(function(line){return e.shiftKey?line.replace(/^( {1,2}|\t)/,''):'  '+line;}).join('\n');input.setRangeText(changed,from,to,'select');}input.scrollTop=scroll;input.dispatchEvent(new Event('input',{bubbles:true}));});}
       function initEvents(){
+        installTextIndent();
+        const composerGrip=$('composerResize'),composerLayout=document.querySelector('.composer-layout');
+        composerGrip.addEventListener('pointerdown',function(e){if(e.button!==0)return;e.preventDefault();const bounds=composerLayout.getBoundingClientRect();composerGrip.setPointerCapture(e.pointerId);function move(ev){setComposerWidth((ev.clientX-bounds.left)/bounds.width*100,false);}function done(){composerGrip.removeEventListener('pointermove',move);composerGrip.removeEventListener('pointerup',done);composerGrip.removeEventListener('pointercancel',done);const percent=parseFloat(composerLayout.style.getPropertyValue('--composer-width'));if(Number.isFinite(percent))setComposerWidth(percent,true);}composerGrip.addEventListener('pointermove',move);composerGrip.addEventListener('pointerup',done);composerGrip.addEventListener('pointercancel',done);});
+        composerGrip.addEventListener('keydown',function(e){if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const now=parseFloat(composerLayout.style.getPropertyValue('--composer-width'))||41;setComposerWidth(e.key==='Home'?25:e.key==='End'?75:now+(e.key==='ArrowRight'?3:-3),true);});
+        composerGrip.addEventListener('dblclick',function(){composerLayout.style.removeProperty('--composer-width');try{localStorage.removeItem(composerWidthKey());}catch(e){}});
         const grip=$('feedbackResize');grip.addEventListener('pointerdown',function(e){e.preventDefault();const layout=document.querySelector('.feedback-layout'),form=$('feedbackForm'),start=e.clientX,width=form.getBoundingClientRect().width,max=Math.min(720,layout.clientWidth-290);grip.setPointerCapture(e.pointerId);function move(ev){layout.style.setProperty('--feedback-width',Math.max(320,Math.min(max,width+start-ev.clientX))+'px');}function done(){grip.removeEventListener('pointermove',move);grip.removeEventListener('pointerup',done);grip.removeEventListener('pointercancel',done);}grip.addEventListener('pointermove',move);grip.addEventListener('pointerup',done);grip.addEventListener('pointercancel',done);});
         setInterval(function(){if(cloudReady&&!document.hidden)ShoeCloud.me().then(function(){if($('managementDialog').open&&$('manage-users').classList.contains('active'))renderUsers(true);}).catch(function(){});},30000);
         ['usagePerson','usageTemplate','chartMode'].forEach(function(id){$(id).addEventListener('change',renderUsageView);});$('usagePeriod').addEventListener('change',renderDataVisual);$('refreshUsage').onclick=renderDataVisual;$('usageWordSearch').addEventListener('input',renderUsageWords);
@@ -1439,8 +1456,8 @@
           e.preventDefault();const form=e.currentTarget,button=form.querySelector('button[type="submit"]'),status=$('feedbackSubmitStatus');if(button.disabled)return;
           status.textContent='';status.className='';
           if(!isLoggedIn()){status.textContent='请先登录后提交反馈';status.className='reply-error';return;}
-          const text=$('feedbackText').value.trim(),files=Array.from($('feedbackImages').files);
-          if(!text){status.textContent='请填写问题或建议';status.className='reply-error';$('feedbackText').focus();return;}
+          const text=$('feedbackText').value.trimEnd(),files=Array.from($('feedbackImages').files);
+          if(!text.trim()){status.textContent='请填写问题或建议';status.className='reply-error';$('feedbackText').focus();return;}
           if(files.length>6||files.some(function(f){return !['image/png','image/jpeg'].includes(f.type)||f.size>10*1024*1024;})){status.textContent='最多选择 6 张 PNG 或 JPEG 图片，每张不超过 10 MB';status.className='reply-error';return;}
           const notice=state.feedbackAnnouncement,payload={category:$('feedbackType').value||'其他',content:text,template_id:notice?null:state.feedbackTemplateId||null,announcement_id:notice?notice.id:null,anonymous_to_users:$('feedbackAnonymous').checked};
           const signature=JSON.stringify(payload);
@@ -1478,7 +1495,7 @@
         $('addAnnouncementBtn').addEventListener('click',function(){$('announcementForm').reset();$('announcementUploadPreview').textContent='';delete $('announcementForm').dataset.editId;$('announcementFormTitle').textContent='发布公告';openDialog('announcementDialog');});
         enableImagePaste('announcementImages','announcementDialog',50);
         $('announcementImages').addEventListener('change',function(){const files=Array.from(this.files);$('announcementUploadPreview').textContent=files.length>50?'最多可添加 50 张图片，请重新选择。':files.length?'已选择 '+files.length+' 张图片，保存后展示为附件。':'';});
-        $('announcementForm').addEventListener('submit',async function(e){e.preventDefault();const form=e.currentTarget;if(!isAdmin())return;const id=form.dataset.editId||('announcement-'+crypto.randomUUID());let a=data.announcements.find(function(x){return x.id===id;});const title=$('announcementTitle').value.trim(),body=$('announcementBody').value.trim(),files=Array.from($('announcementImages').files);if(files.length>50||files.some(function(f){return !['image/png','image/jpeg'].includes(f.type)||f.size>10*1024*1024;})){toast('最多 50 张图片，仅支持 PNG、JPEG，每张不超过 10 MB');return;}try{const images=$('announcementImagesClear').checked?[]:(a&&a.images||[]).slice();for(const f of files)images.push((await ShoeCloud.uploadHelp(f)).id);await ShoeCloud.saveAnnouncement(id,{title:title,content:body,images:images,audience_user_id:a&&a.audienceUserId||null,status:a&&!a.active?'withdrawn':'published'});if(a)Object.assign(a,{title:title,body:body,images:images,updatedAt:new Date().toISOString()});else{a={id:id,title:title,body:body,images:images,date:new Date().toISOString().slice(0,10),updatedAt:new Date().toISOString(),active:true};data.announcements.unshift(a);}form.reset();$('announcementUploadPreview').textContent='';delete form.dataset.editId;$('announcementDialog').close();renderAnnouncements();updatePersonalSummaries();toast('公告已保存到服务器');}catch(err){toast('公告未保存，请检查网络');}});
+        $('announcementForm').addEventListener('submit',async function(e){e.preventDefault();const form=e.currentTarget;if(!isAdmin())return;const id=form.dataset.editId||('announcement-'+crypto.randomUUID());let a=data.announcements.find(function(x){return x.id===id;});const title=$('announcementTitle').value.trim(),body=$('announcementBody').value.trimEnd(),files=Array.from($('announcementImages').files);if(files.length>50||files.some(function(f){return !['image/png','image/jpeg'].includes(f.type)||f.size>10*1024*1024;})){toast('最多 50 张图片，仅支持 PNG、JPEG，每张不超过 10 MB');return;}try{const images=$('announcementImagesClear').checked?[]:(a&&a.images||[]).slice();for(const f of files)images.push((await ShoeCloud.uploadHelp(f)).id);await ShoeCloud.saveAnnouncement(id,{title:title,content:body,images:images,audience_user_id:a&&a.audienceUserId||null,status:a&&!a.active?'withdrawn':'published'});if(a)Object.assign(a,{title:title,body:body,images:images,updatedAt:new Date().toISOString()});else{a={id:id,title:title,body:body,images:images,date:new Date().toISOString().slice(0,10),updatedAt:new Date().toISOString(),active:true};data.announcements.unshift(a);}form.reset();$('announcementUploadPreview').textContent='';delete form.dataset.editId;$('announcementDialog').close();renderAnnouncements();updatePersonalSummaries();toast('公告已保存到服务器');}catch(err){toast('公告未保存，请检查网络');}});
         $('addFeedbackTypeBtn').addEventListener('click',function(){openDialog('feedbackTypeDialog');});
         $('feedbackTypeForm').addEventListener('submit',async function(e){e.preventDefault();const form=e.currentTarget;const items=clone(data.feedbackTypes);items.push({id:'ft-'+crypto.randomUUID(),name:$('feedbackTypeName').value.trim(),example:$('feedbackTypeNewExample').value.trim(),active:true});try{await ShoeCloud.saveFeedbackTypes(items);data.feedbackTypes=items;form.reset();$('feedbackTypeDialog').close();renderFeedbackTypes();toast('反馈类别已增加');}catch(err){toast('反馈类别未保存');}});
         $('themeBtn').addEventListener('click',function(){const themes=['light','eye','dark'],icons=['☀','◒','☾'];let i=(themes.indexOf(state.theme)+1)%themes.length;state.theme=themes[i];document.documentElement.dataset.theme=state.theme;$('themeBtn').textContent=icons[i];});
