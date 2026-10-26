@@ -2,6 +2,7 @@
 import uuid
 import re
 import json
+import media_support
 from zoneinfo import ZoneInfo
 
 async def anonymous_map(conn,feedback_id):
@@ -15,6 +16,10 @@ async def anonymous_map(conn,feedback_id):
 
 async def decorate(conn,item,actor,feedback_id,anonymous,*,aliases=None,profiles=None):
     if isinstance(item.get('template_reference'),str):item['template_reference']=json.loads(item['template_reference'])
+    if 'category' in item:
+        item['media']=[dict(r) for r in await conn.fetch('''SELECT a.id,a.content_type FROM shoe_workbench.attachments a
+            JOIN shoe_workbench.feedback_messages m ON m.id=a.feedback_message_id WHERE m.feedback_id=$1 AND m.content='' AND m.author_id=$4
+            AND (m.status='active' OR (m.status='withdrawn' AND (m.author_id=$2 OR $3))) ORDER BY m.created_at,a.id''',feedback_id,actor.user_id,actor.is_admin,item['author_id'])]
     author=item['author_id'];item['is_owner']=author==actor.user_id
     # Cache only within one response, never across users or requests.
     if profiles is None: profiles={}
@@ -37,7 +42,7 @@ async def notification_context(conn,feedback_id,title,message_id=None):
     root=await conn.fetchrow('SELECT category,content,status,author_id,created_at FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL',feedback_id)
     if not root:return None
     latest=await conn.fetchrow("SELECT id,content,author_id FROM shoe_workbench.feedback_messages WHERE feedback_id=$1 AND status='active' AND ($2::text IS NULL OR id=$2) ORDER BY created_at DESC,id DESC LIMIT 1",feedback_id,message_id)
-    snippet=lambda value,limit:' '.join((value or '').split())[:limit]
+    snippet=lambda value,limit:' '.join(media_support.preview(value).split())[:limit]
     status={'pending':'待解决','processing':'处理中','resolved':'已解决','awaiting_confirmation':'待确认','withdrawn':'已撤回'}.get(root['status'],root['status'])
     context=re.match(r'^【(?:位置|卖点|模板)：([^】]+)】\s*',root['content'])
     question=root['content'][context.end():] if context else root['content']

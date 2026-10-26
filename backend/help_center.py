@@ -1,5 +1,6 @@
 """Published learning articles, per-person onboarding, and announcement links."""
 import json
+import media_support
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, Field
 
@@ -18,7 +19,10 @@ def register(app, current_user, require_admin):
                 LEFT JOIN shoe_workbench.help_reads r ON r.article_id=a.id AND r.user_id=$1
                 WHERE $2 OR a.status='published' ORDER BY a.created_at,a.id''',actor.user_id,actor.is_admin)
             seen=await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.help_onboarding WHERE user_id=$1)',actor.user_id)
-        return {'articles':[dict(r,images=json.loads(r['images']) if isinstance(r['images'],str) else r['images']) for r in rows], 'onboarding_seen':seen}
+            articles=[dict(r,images=json.loads(r['images']) if isinstance(r['images'],str) else r['images']) for r in rows]
+            ids=list({ident for a in articles for ident in a['images']})
+            types={r['id']:r['content_type'] for r in await conn.fetch('SELECT id,content_type FROM shoe_workbench.attachments WHERE id=ANY($1::text[])',ids)}
+        return {'articles':[dict(a,media_types={ident:types.get(ident,'image/png') for ident in a['images']}) for a in articles], 'onboarding_seen':seen}
 
     @app.post('/help/onboarding/seen')
     async def acknowledge(user=Depends(current_user)):
@@ -46,14 +50,14 @@ def register(app, current_user, require_admin):
         if not payload.content.strip() and not payload.images:raise HTTPException(422,'请填写正文或添加教学图片')
         async with app.state.db.acquire() as conn:
             async with conn.transaction():
-                count=await conn.fetchval('SELECT count(*) FROM shoe_workbench.attachments WHERE id=ANY($1::text[]) AND feedback_message_id IS NULL AND content_type IN (\'image/png\',\'image/jpeg\')',payload.images)
+                count=await conn.fetchval('SELECT count(*) FROM shoe_workbench.attachments WHERE id=ANY($1::text[]) AND feedback_message_id IS NULL AND content_type IN (\'image/png\',\'image/jpeg\',\'video/mp4\',\'video/webm\')',payload.images)
                 if count!=len(set(payload.images)):raise HTTPException(422,'教学图片不存在或类型不正确')
                 await conn.execute('''INSERT INTO shoe_workbench.help_articles(id,title,content,images,status,created_by)
                     VALUES($1,$2,$3,$4::jsonb,$5,$6) ON CONFLICT(id) DO UPDATE SET title=$2,content=$3,images=$4::jsonb,status=$5,updated_at=now()''',article_id,payload.title.strip(),payload.content,json.dumps(payload.images),payload.status,user[0].user_id)
                 notice_id='help-article-'+article_id
                 if payload.status=='published':
                     await conn.execute('''INSERT INTO shoe_workbench.announcements(id,title,content,status,created_by,help_article_id)
-                        VALUES($1,$2,$3,'published',$4,$5) ON CONFLICT(id) DO UPDATE SET title=$2,content=$3,status='published',deleted_at=NULL,updated_at=now()''',notice_id,'使用说明：'+payload.title.strip(),(payload.content[:240] or '新增图文操作说明，点击查看教学图片。')+'\n点击「查看使用说明」阅读完整内容。',user[0].user_id,article_id)
+                        VALUES($1,$2,$3,'published',$4,$5) ON CONFLICT(id) DO UPDATE SET title=$2,content=$3,status='published',deleted_at=NULL,updated_at=now()''',notice_id,'使用说明：'+payload.title.strip(),(media_support.preview(payload.content)[:240] or '新增图文操作说明，点击查看教学素材。')+'\n点击「查看使用说明」阅读完整内容。',user[0].user_id,article_id)
                 else:
                     await conn.execute("UPDATE shoe_workbench.announcements SET status='withdrawn',updated_at=now() WHERE id=$1",notice_id)
         return {'id':article_id,'saved':True}

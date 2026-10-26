@@ -52,6 +52,7 @@
     savePreferences: value => request('/preferences', { method: 'PUT', body: json(value) }),
     feedback: (offset=0) => request('/feedback?offset='+Number(offset)),
     feedbackOne: id => request('/feedback/'+pathId(id)),
+    resolveInlineMedia: (id,links,message_id=null) => request('/feedback/'+pathId(id)+'/inline-media',{method:'POST',body:json({links,message_id})}),
     createFeedback: value => request('/feedback', { method: 'POST', body: json(value) }),
     feedbackMessages: id => request('/feedback/' + pathId(id) + '/messages'),
     editReply: (id,message,content) => request('/feedback/'+pathId(id)+'/messages/'+pathId(message),{method:'PATCH',body:json({content})}),

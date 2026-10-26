@@ -36,6 +36,7 @@ shoe-prompt-workbench/
 - [最新冗余检查与维护事项](docs/冗余与维护检查-20261026.md)
 - [反馈素材与模板引用](docs/反馈素材与模板引用.md)
 - [多篇使用说明与反馈关联](docs/多篇使用说明与反馈关联.md)
+- [正文媒体排版与视频上传](docs/正文媒体排版与视频上传.md)
 
 ## 当前真实部署
 
@@ -74,6 +75,8 @@ python tests/run_unit_tests.py
 同日后续：按所有者要求将仓库改为公开；增加反馈位置实时读取、视觉需求默认“其他”、参考视频上传和回复引用已发布模板。需先执行 migrations/016_feedback_template_reference.sql，再部署新程序。
 
 同日再次更新：使用说明改为独立多篇图文，首次阅读引导按账号保存，后续发布通过公告提示；反馈的位置改为自由补充说明，首次提交也可引用模板和历史版本。需追加 migrations/017_help_center.sql，并部署新模块 backend/help_center.py。上段“视觉需求默认其他”已由本次可自由编辑的位置说明替代。
+
+同日媒体更新：使用说明、公告和反馈统一支持视频；正文粘贴图片可在原位置接续文字，按钮附件位于末尾。必须同时部署 frontend/media-editor.js 和 backend/media_support.py，不需新增结构迁移。
 
 后续结构脚本还包括 `backend/credential_vault.sql`、`collaboration.sql`、`notification_context.sql`、`reply_lifecycle.sql`，详见部署说明。运行代码需要 backend 全部运行模块，不能只复制 app.py。SQL 和集成测试不能未经审查直接对生产环境执行。
 

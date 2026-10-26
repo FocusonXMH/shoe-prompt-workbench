@@ -25,6 +25,7 @@ import shared_accounts
 import credential_vault
 import collaboration
 import help_center
+import media_support
 
 
 @asynccontextmanager
@@ -904,17 +905,7 @@ async def upload_help_image(request: Request, user=Depends(current_user)):
     root_setting = os.environ.get('SHOE_UPLOAD_DIR')
     if not root_setting:
         raise HTTPException(503, 'upload storage is not configured')
-    content_type = request.headers.get('content-type', '').split(';', 1)[0].lower()
-    allowed = {'image/jpeg': b'\xff\xd8\xff', 'image/png': b'\x89PNG\r\n\x1a\n'}
-    if content_type not in allowed:
-        raise HTTPException(415, 'only JPEG and PNG images are supported')
-    data = bytearray()
-    async for chunk in request.stream():
-        data.extend(chunk)
-        if len(data) > 10 * 1024 * 1024:
-            raise HTTPException(413, 'image exceeds 10 MB')
-    if not data.startswith(allowed[content_type]):
-        raise HTTPException(415, 'invalid image')
+    content_type, data = await media_support.read_upload(request)
     ident = str(uuid.uuid4())
     root = Path(root_setting).resolve()
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -1336,11 +1327,12 @@ async def announcements(user=Depends(current_user)):
     actor = user[0]
     async with app.state.db.acquire() as conn:
         rows = await conn.fetch('''SELECT a.id,a.title,a.content,a.audience_user_id,a.status,a.created_at,a.updated_at,a.images,a.feedback_id,a.feedback_message_id,a.help_article_id,
+            (SELECT COALESCE(json_object_agg(x.id,x.content_type),'{}'::json) FROM shoe_workbench.attachments x WHERE a.images ? x.id) AS media_types,
             r.read_method,r.read_at,r.hidden_at FROM shoe_workbench.announcements a
             LEFT JOIN shoe_workbench.announcement_reads r ON r.announcement_id=a.id AND r.user_id=$1
             WHERE a.deleted_at IS NULL AND (a.feedback_id IS NULL OR EXISTS(SELECT 1 FROM shoe_workbench.feedback f WHERE f.id=a.feedback_id AND f.deleted_at IS NULL)) AND ($2 OR (a.status='published' AND (a.audience_user_id IS NULL OR a.audience_user_id=$1)))
             ORDER BY a.updated_at DESC LIMIT 500''', actor.user_id, actor.is_admin)
-    return [dict(row, images=json_value(row['images'])) for row in rows]
+    return [dict(row, images=json_value(row['images']),media_types=json_value(row['media_types'])) for row in rows]
 
 
 @app.put('/admin/announcements/{announcement_id}')
@@ -1372,7 +1364,7 @@ async def announcement_image(announcement_id: str, image_id: str, user=Depends(c
     async with app.state.db.acquire() as conn:
         row = await conn.fetchrow('''SELECT f.storage_key,f.content_type FROM shoe_workbench.attachments f
           JOIN shoe_workbench.announcements a ON a.images ? f.id
-          WHERE a.id=$1 AND f.id=$2 AND f.feedback_message_id IS NULL
+          WHERE a.id=$1 AND f.id=$2 AND f.feedback_message_id IS NULL AND a.deleted_at IS NULL
           AND ($3 OR (a.status='published' AND (a.audience_user_id IS NULL OR a.audience_user_id=$4)))''',
           announcement_id,ident,user[0].is_admin,user[0].user_id)
     path = Path(root_setting).resolve() / ident
@@ -1436,18 +1428,7 @@ async def upload_feedback_image(feedback_id: str, request: Request, user=Depends
     root_setting = os.environ.get('SHOE_UPLOAD_DIR')
     if not root_setting:
         raise HTTPException(503, 'upload storage is not configured')
-    content_type = request.headers.get('content-type', '').split(';', 1)[0].lower()
-    allowed = {'image/jpeg': b'\xff\xd8\xff', 'image/png': b'\x89PNG\r\n\x1a\n', 'video/mp4': None, 'video/webm': b'\x1aE\xdf\xa3'}
-    if content_type not in allowed:
-        raise HTTPException(415, '支持 PNG、JPEG 图片及 MP4、WebM 视频')
-    data = bytearray()
-    async for chunk in request.stream():
-        data.extend(chunk)
-        if len(data) > 10 * 1024 * 1024:
-            raise HTTPException(413, '附件不得超过 10 MB')
-    valid = len(data)>=12 and data[4:8]==b'ftyp' if content_type=='video/mp4' else data.startswith(allowed[content_type])
-    if not valid:
-        raise HTTPException(415, '附件格式与类型不匹配')
+    content_type, data = await media_support.read_upload(request)
     ident, message_id = str(uuid.uuid4()), str(uuid.uuid4())
     existing_message = request.headers.get('x-feedback-message-id')
     root = Path(root_setting).resolve()
@@ -1528,6 +1509,7 @@ async def change_feedback_status(feedback_id: str, payload: FeedbackTransition, 
 
 
 help_center.register(app,current_user,require_admin)
+media_support.register(app,current_user)
 
 # Static assets and API are deployed by the same service; file contents are
 # public but all application data routes still require a verified identity.

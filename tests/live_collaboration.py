@@ -30,8 +30,11 @@ async def main():
         guide_upload=await admin.post('/admin/help/images',content=guide_png,headers={'Content-Type':'image/png'})
         assert guide_upload.status_code==201
         guide_image_id=guide_upload.json()['id']
+        guide_video=await admin.post('/admin/help/images',content=b'\x00\x00\x00\x18ftypisom'+b'\x00'*12,headers={'Content-Type':'video/mp4'})
+        assert guide_video.status_code==201
+        guide_video_id=guide_video.json()['id']
         guide_id='check-guide-'+tag
-        guide={'title':'验收临时说明','content':'文字与图文分篇测试','images':[guide_image_id],'status':'draft'}
+        guide={'title':'验收临时说明','content':'图片前\n[[media:'+guide_image_id+']]\n图片后的说明','images':[guide_image_id,guide_video_id],'status':'draft'}
         await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
         assert not any(a['id']==guide_id for a in (await req(one,'GET','/help/articles'))['articles'])
         assert (await one.get('/help/images/'+guide_image_id)).status_code==404
@@ -39,6 +42,12 @@ async def main():
         assert not (await req(one,'GET','/help/articles'))['onboarding_seen']
         guide['status']='published';await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
         assert (await one.get('/help/images/'+guide_image_id)).status_code==200
+        assert (await one.get('/help/images/'+guide_video_id)).headers['content-type']=='video/mp4'
+        guide_saved=next(a for a in (await req(one,'GET','/help/articles'))['articles'] if a['id']==guide_id)
+        assert guide_saved['media_types'][guide_video_id]=='video/mp4' and guide_saved['content']==guide['content']
+        await req(admin,'PUT','/admin/announcements/check-media-'+tag,{'title':'素材验收临时公告','content':guide['content'],'images':[guide_image_id,guide_video_id],'status':'published'})
+        announcement=next(a for a in await req(one,'GET','/announcements') if a['id']=='check-media-'+tag)
+        assert announcement['media_types'][guide_video_id]=='video/mp4'
         assert any(a['id']==guide_id for a in (await req(one,'GET','/help/articles'))['articles'])
         assert any(a.get('help_article_id')==guide_id for a in await req(one,'GET','/announcements'))
         await req(one,'POST','/help/articles/'+guide_id+'/read')
@@ -103,6 +112,23 @@ async def main():
         saved_root=await req(one,'GET','/feedback/'+root_ref['id'])
         assert saved_root['template_reference']['version']==template['version']
         assert next(f for f in await req(one,'GET','/feedback') if f['id']==root_ref['id'])['template_reference']['id']==template['id']
+        placeholder=str(uuid.uuid4())
+        inline=await req(one,'POST','/feedback',{'category':'验收','content':'前段\n[[media:'+placeholder+']]\n后段'});fids.append(inline['id'])
+        upload=await one.post('/feedback/'+inline['id']+'/attachments',content=guide_png,headers={'Content-Type':'image/png'});assert upload.status_code==201
+        image_id=upload.json()['id']
+        await req(one,'POST','/feedback/'+inline['id']+'/inline-media',{'links':{placeholder:image_id}})
+        stored=await req(one,'GET','/feedback/'+inline['id'])
+        assert '[[media:'+image_id+']]' in stored['content'] and image_id in [a['id'] for a in stored['media']]
+        assert (await two.post('/feedback/'+inline['id']+'/inline-media',json={'links':{placeholder:image_id}})).status_code==403
+        assert (await one.post('/feedback/'+inline['id']+'/inline-media',json={'links':{placeholder:guide_image_id}})).status_code==422
+        reply_placeholder=str(uuid.uuid4())
+        inline_reply=await req(one,'POST','/feedback/'+inline['id']+'/messages',{'content':'回复前\n[[media:'+reply_placeholder+']]\n回复后'})
+        reply_upload=await one.post('/feedback/'+inline['id']+'/attachments',content=guide_png,headers={'Content-Type':'image/png','X-Feedback-Message-Id':inline_reply['id']});assert reply_upload.status_code==201
+        await req(one,'POST','/feedback/'+inline['id']+'/inline-media',{'message_id':inline_reply['id'],'links':{reply_placeholder:reply_upload.json()['id']}})
+        stored_reply=next(m for m in await req(one,'GET','/feedback/'+inline['id']+'/messages') if m['id']==inline_reply['id'])
+        assert '[[media:'+reply_upload.json()['id']+']]' in stored_reply['content']
+        assert reply_upload.json()['id'] not in [a['id'] for a in (await req(one,'GET','/feedback/'+inline['id']))['media']]
+        print('PASS: inline media persistence, root/reply separation, ownership validation, guide and announcement video types')
         referenced=await req(admin,'POST','/feedback/'+fid+'/messages',{'content':'请试填引用模板','template_id':template['id']})
         saved=next(r for r in await req(one,'GET','/feedback/'+fid+'/messages') if r['id']==referenced['id'])
         assert saved['template_reference']['id']==template['id'] and saved['template_reference']['version']==template['version']
