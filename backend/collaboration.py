@@ -1,6 +1,7 @@
 """Thread-local anonymity and administrator inbox delivery."""
 import uuid
 import re
+import json
 from zoneinfo import ZoneInfo
 
 async def anonymous_map(conn,feedback_id):
@@ -13,6 +14,7 @@ async def anonymous_map(conn,feedback_id):
     return result
 
 async def decorate(conn,item,actor,feedback_id,anonymous,*,aliases=None,profiles=None):
+    if isinstance(item.get('template_reference'),str):item['template_reference']=json.loads(item['template_reference'])
     author=item['author_id'];item['is_owner']=author==actor.user_id
     # Cache only within one response, never across users or requests.
     if profiles is None: profiles={}

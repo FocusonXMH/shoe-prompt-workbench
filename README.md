@@ -17,7 +17,7 @@ shoe-prompt-workbench/
 ├─ .gitignore                排除凭据、图片、数据备份与运行文件
 ├─ frontend/                 当前线上网页：index.html、cloud-api.js、prompt-data.js
 ├─ backend/                  FastAPI 接口、共享身份验证、权限、账号管理、依赖
-├─ migrations/               001—015 工作台数据库结构迁移
+├─ migrations/               001—017 工作台数据库结构迁移（另见部署说明中的后续结构脚本）
 ├─ deploy/                   systemd、Nginx、备份、共享身份授权脚本
 ├─ tests/                    单元测试及需人工授权执行的在线集成测试
 ├─ docs/                     中文数据、账号、部署、设计和验收说明
@@ -35,6 +35,7 @@ shoe-prompt-workbench/
 - [版本名称与微调发布](docs/版本名称与微调发布.md)
 - [最新冗余检查与维护事项](docs/冗余与维护检查-20261026.md)
 - [反馈素材与模板引用](docs/反馈素材与模板引用.md)
+- [多篇使用说明与反馈关联](docs/多篇使用说明与反馈关联.md)
 
 ## 当前真实部署
 
@@ -71,6 +72,8 @@ python tests/run_unit_tests.py
 本次恢复个人私有仓库更新，包含上述历史改动及当前反馈协作、匿名编号、回复编辑撤回删除、通知定位、已保存账号切换、管理员凭据查看和冗余清理。上节“暂未推送”是 10 月 24 日的历史状态。
 
 同日后续：按所有者要求将仓库改为公开；增加反馈位置实时读取、视觉需求默认“其他”、参考视频上传和回复引用已发布模板。需先执行 migrations/016_feedback_template_reference.sql，再部署新程序。
+
+同日再次更新：使用说明改为独立多篇图文，首次阅读引导按账号保存，后续发布通过公告提示；反馈的位置改为自由补充说明，首次提交也可引用模板和历史版本。需追加 migrations/017_help_center.sql，并部署新模块 backend/help_center.py。上段“视觉需求默认其他”已由本次可自由编辑的位置说明替代。
 
 后续结构脚本还包括 `backend/credential_vault.sql`、`collaboration.sql`、`notification_context.sql`、`reply_lifecycle.sql`，详见部署说明。运行代码需要 backend 全部运行模块，不能只复制 app.py。SQL 和集成测试不能未经审查直接对生产环境执行。
 

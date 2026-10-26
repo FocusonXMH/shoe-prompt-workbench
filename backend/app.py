@@ -24,6 +24,7 @@ from policy import WorkbenchUser, can_transition_feedback
 import shared_accounts
 import credential_vault
 import collaboration
+import help_center
 
 
 @asynccontextmanager
@@ -86,6 +87,7 @@ class FeedbackCreate(BaseModel):
     category: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=5000)
     template_id: str | None = Field(default=None, max_length=100)
+    template_version: int | None = Field(default=None, ge=1)
     anonymous_to_users: bool = False
 
 
@@ -941,8 +943,8 @@ async def read_help_image(image_id: str, user=Depends(current_user)):
         raise HTTPException(503, 'upload storage is not configured')
     async with app.state.db.acquire() as conn:
         row = await conn.fetchrow('''SELECT a.storage_key,a.content_type FROM shoe_workbench.attachments a
-          JOIN shoe_workbench.settings s ON s.key='help' AND (s.value->'images') ? a.id
-          WHERE a.id=$1 AND a.feedback_message_id IS NULL''',ident)
+          WHERE a.id=$1 AND a.feedback_message_id IS NULL AND
+            EXISTS(SELECT 1 FROM shoe_workbench.help_articles h WHERE h.images ? a.id AND (h.status='published' OR $2))''',ident,user[0].is_admin)
     path = Path(root_setting).resolve() / ident
     if row is None or row['storage_key'] != ident or not path.is_file():
         raise HTTPException(404, 'image not found')
@@ -1129,14 +1131,19 @@ async def create_feedback(payload: FeedbackCreate, user=Depends(current_user)):
             if existing['deleted_at']:
                 raise HTTPException(409,'submission already deleted')
             return {'id':ident,'status':'pending','already_saved':True}
-        if payload.template_id and not await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.templates WHERE id=$1)',payload.template_id):
-            raise HTTPException(422,'linked template no longer exists')
+        reference=None
+        if payload.template_id:
+            linked=await conn.fetchrow('''SELECT t.id,t.title,v.version,COALESCE(v.display_name,'v'||v.version::text) AS version_name
+                FROM shoe_workbench.templates t JOIN shoe_workbench.template_versions v ON v.template_id=t.id AND v.version=COALESCE($2,t.published_version)
+                WHERE t.id=$1 AND t.archived_at IS NULL AND v.deleted_at IS NULL''',payload.template_id,payload.template_version)
+            if not linked:raise HTTPException(422,'引用模板或版本已删除，请重新选择')
+            reference=json.dumps(dict(linked))
         if payload.announcement_id and not await conn.fetchval("SELECT EXISTS(SELECT 1 FROM shoe_workbench.announcements WHERE id=$1 AND status='published' AND deleted_at IS NULL AND audience_user_id IS NULL)",payload.announcement_id):
             raise HTTPException(404,'announcement not found')
         await conn.execute('''INSERT INTO shoe_workbench.feedback
-          (id, author_id, template_id, category, content, anonymous_to_users,announcement_id)
-          VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(id) DO NOTHING''', ident, actor.user_id, payload.template_id,
-          payload.category, payload.content, payload.anonymous_to_users,payload.announcement_id)
+          (id, author_id, template_id, category, content, anonymous_to_users,announcement_id,template_reference)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb) ON CONFLICT(id) DO NOTHING''', ident, actor.user_id, payload.template_id,
+          payload.category, payload.content, payload.anonymous_to_users,payload.announcement_id,reference)
         await collaboration.notify_admins(conn,app.state.accounts,ident,actor,'收到新的需求反馈')
     return {'id': ident, 'status': 'pending'}
 
@@ -1147,7 +1154,7 @@ async def list_feedback(offset: int=0,user=Depends(current_user)):
         raise HTTPException(422,'invalid offset')
     actor, principal = user
     async with app.state.db.acquire() as conn:
-        rows = await conn.fetch('''SELECT f.id,f.author_id,f.template_id,f.category,f.content,
+        rows = await conn.fetch('''SELECT f.id,f.author_id,f.template_id,f.category,f.content,f.template_reference,
           f.anonymous_to_users,f.status,f.created_at,f.updated_at,f.resolved_at,p.display_name AS author_name,
           f.announcement_id,a.title AS announcement_title
           FROM shoe_workbench.feedback f LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=f.author_id
@@ -1328,7 +1335,7 @@ async def notify_feedback_author(feedback_id: str, user=Depends(current_user)):
 async def announcements(user=Depends(current_user)):
     actor = user[0]
     async with app.state.db.acquire() as conn:
-        rows = await conn.fetch('''SELECT a.id,a.title,a.content,a.audience_user_id,a.status,a.created_at,a.updated_at,a.images,a.feedback_id,a.feedback_message_id,
+        rows = await conn.fetch('''SELECT a.id,a.title,a.content,a.audience_user_id,a.status,a.created_at,a.updated_at,a.images,a.feedback_id,a.feedback_message_id,a.help_article_id,
             r.read_method,r.read_at,r.hidden_at FROM shoe_workbench.announcements a
             LEFT JOIN shoe_workbench.announcement_reads r ON r.announcement_id=a.id AND r.user_id=$1
             WHERE a.deleted_at IS NULL AND (a.feedback_id IS NULL OR EXISTS(SELECT 1 FROM shoe_workbench.feedback f WHERE f.id=a.feedback_id AND f.deleted_at IS NULL)) AND ($2 OR (a.status='published' AND (a.audience_user_id IS NULL OR a.audience_user_id=$1)))
@@ -1519,6 +1526,8 @@ async def change_feedback_status(feedback_id: str, payload: FeedbackTransition, 
                   'feedback-notice-'+str(uuid.uuid4()),context[0],context[1],row['author_id'],actor.user_id,feedback_id,context[2])
     return {'id': feedback_id, 'status': payload.status}
 
+
+help_center.register(app,current_user,require_admin)
 
 # Static assets and API are deployed by the same service; file contents are
 # public but all application data routes still require a verified identity.

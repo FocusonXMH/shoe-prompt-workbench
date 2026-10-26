@@ -11,7 +11,11 @@ async def main():
             await conn.execute('DELETE FROM shoe_workbench.attachments WHERE feedback_message_id IN (SELECT id FROM shoe_workbench.feedback_messages WHERE feedback_id=$1)',fid)
             await conn.execute('DELETE FROM shoe_workbench.feedback_messages WHERE feedback_id=$1',fid)
             await conn.execute('DELETE FROM shoe_workbench.feedback WHERE id=$1',fid)
+        await conn.execute('DELETE FROM shoe_workbench.announcement_reads WHERE user_id=ANY($1::text[]) OR announcement_id IN (SELECT id FROM shoe_workbench.announcements WHERE created_by=ANY($1::text[]) OR audience_user_id=ANY($1::text[]))',ids)
         await conn.execute('DELETE FROM shoe_workbench.announcements WHERE created_by=ANY($1::text[]) OR audience_user_id=ANY($1::text[])',ids)
+        await conn.execute('DELETE FROM shoe_workbench.help_articles WHERE created_by=ANY($1::text[])',ids)
+        await conn.execute('DELETE FROM shoe_workbench.help_reads WHERE user_id=ANY($1::text[])',ids)
+        await conn.execute('DELETE FROM shoe_workbench.help_onboarding WHERE user_id=ANY($1::text[])',ids)
         await conn.execute('DELETE FROM shoe_workbench.remembered_accounts WHERE account_id=ANY($1::text[])',ids)
         for u in users:
             await conn.execute('DELETE FROM shoe_workbench.local_sessions WHERE user_id=$1',u['id'])

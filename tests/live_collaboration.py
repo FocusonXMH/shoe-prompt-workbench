@@ -26,6 +26,32 @@ async def main():
             c=httpx.AsyncClient(base_url='http://127.0.0.1:18808',timeout=30);clients.append(c);u=await login(c,i)
             assert u['admin']==(i in (0,3))
         admin,one,two,manager=clients
+        guide_png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
+        guide_upload=await admin.post('/admin/help/images',content=guide_png,headers={'Content-Type':'image/png'})
+        assert guide_upload.status_code==201
+        guide_image_id=guide_upload.json()['id']
+        guide_id='check-guide-'+tag
+        guide={'title':'验收临时说明','content':'文字与图文分篇测试','images':[guide_image_id],'status':'draft'}
+        await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
+        assert not any(a['id']==guide_id for a in (await req(one,'GET','/help/articles'))['articles'])
+        assert (await one.get('/help/images/'+guide_image_id)).status_code==404
+        assert (await one.put('/admin/help/articles/'+guide_id,json=guide)).status_code==403
+        assert not (await req(one,'GET','/help/articles'))['onboarding_seen']
+        guide['status']='published';await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
+        assert (await one.get('/help/images/'+guide_image_id)).status_code==200
+        assert any(a['id']==guide_id for a in (await req(one,'GET','/help/articles'))['articles'])
+        assert any(a.get('help_article_id')==guide_id for a in await req(one,'GET','/announcements'))
+        await req(one,'POST','/help/articles/'+guide_id+'/read')
+        assert (await req(one,'GET','/help/articles'))['onboarding_seen']
+        await req(admin,'PUT','/admin/help/articles/'+guide_id+'-second',{'title':'另一篇独立说明','content':'新增说明只发公告，不重置首次引导','images':[],'status':'published'})
+        center=await req(one,'GET','/help/articles')
+        assert center['onboarding_seen'] and sum(a['id'].startswith(guide_id) for a in center['articles'])==2
+        guide['content']='补充后仍不重复首次引导';await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
+        assert (await req(one,'GET','/help/articles'))['onboarding_seen']
+        guide['status']='withdrawn';await req(admin,'PUT','/admin/help/articles/'+guide_id,guide)
+        assert (await one.get('/help/images/'+guide_image_id)).status_code==404
+        assert not any(a['id']==guide_id for a in (await req(one,'GET','/help/articles'))['articles'])
+        print('PASS: separate guide publication, draft permissions, onboarding acknowledgement, linked announcement and withdrawal')
         root=await req(one,'POST','/feedback',{'category':'验收','content':'匿名验证','anonymous_to_users':True});fid=root['id'];fids.append(fid)
         assert (await req(one,'GET','/feedback/'+fid))['author_name']=='匿名1'
         assert (await req(two,'GET','/feedback/'+fid))['author_id'] is None
@@ -73,6 +99,10 @@ async def main():
         assert not archived_points.intersection(p['id'] for p in await req(one,'GET','/selling-points'))
         assert published, 'Need one existing publication for read-only reference verification'
         template=published[0]
+        root_ref=await req(one,'POST','/feedback',{'category':'验收','content':'直接提交并引用版本','template_id':template['id'],'template_version':template['version']});fids.append(root_ref['id'])
+        saved_root=await req(one,'GET','/feedback/'+root_ref['id'])
+        assert saved_root['template_reference']['version']==template['version']
+        assert next(f for f in await req(one,'GET','/feedback') if f['id']==root_ref['id'])['template_reference']['id']==template['id']
         referenced=await req(admin,'POST','/feedback/'+fid+'/messages',{'content':'请试填引用模板','template_id':template['id']})
         saved=next(r for r in await req(one,'GET','/feedback/'+fid+'/messages') if r['id']==referenced['id'])
         assert saved['template_reference']['id']==template['id'] and saved['template_reference']['version']==template['version']
@@ -134,7 +164,15 @@ async def main():
                 (Path(os.environ.get('SHOE_UPLOAD_DIR','/home/ubuntu/shoe-workbench-staging/uploads')).resolve()/key).unlink(missing_ok=True)
             await db.execute('DELETE FROM shoe_workbench.feedback_messages WHERE feedback_id=$1',fid)
             await db.execute('DELETE FROM shoe_workbench.feedback WHERE id=$1',fid)
+        await db.execute('DELETE FROM shoe_workbench.announcement_reads WHERE user_id=ANY($1::text[]) OR announcement_id IN (SELECT id FROM shoe_workbench.announcements WHERE created_by=ANY($1::text[]) OR audience_user_id=ANY($1::text[]))',ids)
         await db.execute("DELETE FROM shoe_workbench.announcements WHERE created_by=ANY($1::text[]) OR audience_user_id=ANY($1::text[])",ids)
+        await db.execute('DELETE FROM shoe_workbench.help_articles WHERE created_by=ANY($1::text[])',ids)
+        await db.execute('DELETE FROM shoe_workbench.help_reads WHERE user_id=ANY($1::text[])',ids)
+        await db.execute('DELETE FROM shoe_workbench.help_onboarding WHERE user_id=ANY($1::text[])',ids)
+        owned_files=await db.fetch('DELETE FROM shoe_workbench.attachments WHERE owner_id=ANY($1::text[]) RETURNING storage_key',ids)
+        for file in owned_files:
+            key=str(uuid.UUID(file['storage_key']))
+            (Path(os.environ.get('SHOE_UPLOAD_DIR','/home/ubuntu/shoe-workbench-staging/uploads')).resolve()/key).unlink(missing_ok=True)
         await db.execute('DELETE FROM shoe_workbench.remembered_accounts WHERE account_id=ANY($1::text[])',ids)
         for uid in ids:
             await db.execute('DELETE FROM shoe_workbench.local_sessions WHERE user_id=$1',uid)

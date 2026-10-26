@@ -19,6 +19,10 @@
   }
   const json = value => JSON.stringify(value);
   window.ShoeCloud = {
+    helpArticles: () => request('/help/articles'),
+    helpArticleRead: id => request('/help/articles/'+pathId(id)+'/read',{method:'POST'}),
+    helpOnboardingSeen: () => request('/help/onboarding/seen',{method:'POST'}),
+    saveHelpArticle: (id,value) => request('/admin/help/articles/'+pathId(id),{method:'PUT',body:json(value)}),
     rememberCurrent: () => request('/auth/accounts',{method:'POST'}),
     rememberedAccounts: () => request('/auth/accounts'),
     switchRemembered: id => request('/auth/accounts/'+pathId(id)+'/switch',{method:'POST'}),
