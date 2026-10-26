@@ -26,11 +26,12 @@ def can_transition_feedback(user: WorkbenchUser, author_id: str, current: str, t
     author_transitions = {('pending', 'withdrawn'), ('processing', 'withdrawn'),
                           ('withdrawn', 'pending'), ('awaiting_confirmation', 'resolved'),
                           ('awaiting_confirmation', 'processing'), ('resolved', 'processing')}
-    return ((user.is_admin and (current, target) in admin_transitions) or
+    return ((current=='resolved' and target=='processing') or
+            (user.is_admin and (current, target) in admin_transitions) or
             (user.user_id == author_id and (current, target) in author_transitions))
 
 
 def feedback_author_name(user: WorkbenchUser, author_id: str, display_name: str, anonymous: bool) -> str:
-    if anonymous and not user.is_admin and user.user_id != author_id:
+    if anonymous and not user.is_admin:
         return '匿名用户'
     return display_name

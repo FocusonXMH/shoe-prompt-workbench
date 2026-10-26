@@ -320,11 +320,6 @@
     .admin-note { background:var(--panel-2);border-left:3px solid var(--teal);padding:10px 12px;margin-top:12px;border-radius:0 10px 10px 0; }
 
     /* Agent & admin */
-    .agent-hero { padding:34px;display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:center;background:linear-gradient(135deg,var(--panel),var(--brand-2)); }
-    .agent-hero h1 { font-size:31px;margin:0 0 10px; }
-    .agent-chat { background:var(--panel);border:1px solid var(--line);padding:15px;border-radius:17px;box-shadow:var(--shadow); }
-    .fake-message { padding:10px 12px;background:var(--panel-2);border-radius:12px;margin-bottom:8px;color:var(--muted);font-size:12px; }
-    .fake-message.user { background:var(--brand-2);color:var(--brand);margin-left:40px; }
     .admin-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px; }
     .admin-stat { padding:18px; }
     .admin-stat strong { display:block;font-size:26px;margin-top:5px; }
@@ -365,6 +360,69 @@
     .dialog-head { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px; }
     .dialog-head h2 { margin:0 0 4px;font-size:21px; }
     .dialog-actions { display:flex;justify-content:flex-end;gap:9px;margin-top:20px; }
+    /* Quiet media markers share the palette of all three themes. */
+    .template-card .visual,.template-card .visual.wide { height:36px;min-height:36px;padding:0;border-radius:0;background:none!important;color:var(--brand)!important;justify-content:flex-start;margin-bottom:8px; }
+    .media-marker svg { width:34px;height:34px;flex:none;stroke-width:1.5; }
+    .template-card { padding-top:18px;display:flex;flex-direction:column; }
+    .template-card .card-tools { order:10; }
+    .template-card .card-foot { margin-top:auto; }
+    .template-card .quick-actions,.maintenance .template-card .quick-actions { top:16px;right:16px;left:auto; }
+    .maintenance .template-card .quick-actions { right:54px; }
+    .maintenance .template-card .card-tools { position:absolute;right:16px;top:16px;padding:0;margin:0;border:0; }
+    .selling-head > div:first-child { flex:1;min-width:0; }
+    .selling-head .sort-tools { order:2;align-self:flex-start; }
+    .selling-head .sort-tools .edit-point { width:32px;height:32px;border-color:transparent;background:transparent;color:var(--muted); }
+    .selling-head .sort-tools .edit-point:hover { background:var(--panel-2);color:var(--brand); }
+    .template-card .mini-tool { width:32px;height:32px;border-color:var(--line);background:var(--panel);color:var(--muted);box-shadow:none; }
+    .template-card .mini-tool:hover { color:var(--text);background:var(--panel-2); }
+    .field-required { color:var(--danger,#c24444);background:transparent;border:0;font-weight:600; }
+    .field-optional { color:var(--muted);background:transparent;border:0;font-weight:600; }
+    .identity-account-list { display:grid;gap:10px; }
+    .identity-account-row { display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:4px 8px 4px 4px;background:var(--panel); }
+    .identity-account-row.is-current { background:var(--panel-2); }
+    .identity-account-select { flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;padding:10px;border:0;background:transparent;border-radius:10px;color:var(--text);cursor:pointer;font:inherit; }
+    .identity-account-select:disabled { cursor:default;opacity:1; }
+    .identity-account-select:not(:disabled):hover { background:var(--brand-2); }
+    .identity-account-select .avatar { width:42px;height:42px;flex:none; }
+    .identity-account-copy { flex:1;min-width:0; }
+    .identity-account-copy strong,.identity-account-copy small { display:block;overflow-wrap:anywhere; }
+    .identity-account-copy small { color:var(--muted);font-size:12px;margin-top:3px; }
+    .identity-account-remove { flex:none;border:0;background:var(--danger);color:white;position:absolute;right:8px;top:4px;bottom:4px;width:66px;border-radius:10px;cursor:pointer;opacity:0;transform:translateX(8px);transition:opacity .18s,transform .18s;pointer-events:none; }
+    .identity-account-row { position:relative;overflow:hidden; }
+    .identity-account-row .identity-account-select { position:relative;z-index:1;background:var(--panel);transition:margin-right .2s ease;touch-action:pan-y; }
+    .identity-account-row.is-current .identity-account-select { background:var(--panel-2); }
+    .identity-account-row.reveal-remove .identity-account-select { margin-right:74px; }
+    .identity-account-hint { position:absolute;right:14px;color:var(--muted);pointer-events:none; }
+    .identity-account-row.reveal-remove .identity-account-hint { opacity:0; }
+    .identity-account-row.reveal-remove .identity-account-remove { opacity:1;transform:translateX(0);pointer-events:auto; }
+    @media(prefers-reduced-motion:reduce){.identity-account-row .identity-account-select,.identity-account-remove{transition:none;}}
+    .feedback-focus { outline:2px solid color-mix(in srgb,var(--brand) 65%,transparent);outline-offset:3px;box-shadow:0 0 0 6px color-mix(in srgb,var(--brand) 10%,transparent); }
+    .feedback-message.reply-focus { border-color:var(--brand);background:var(--brand-2);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 12%,transparent);scroll-margin-top:90px; }
+    .latest-reply-marker { color:var(--brand);font-size:11px;font-weight:600;white-space:nowrap; }
+    .feedback-message > .message-reply-link { margin-right:14px;padding:6px 0; }
+    .feedback-message > .delete-message { color:var(--danger); }
+    .message-edit-slot:not(:empty) { margin-top:8px; }
+    .notice-preview { display:block;margin-top:6px;font-size:12px;color:var(--muted);line-height:1.65;white-space:normal; }
+    .notice-preview-line { display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere; }
+    .notice-preview-meta { display:block;margin-top:5px;font-size:11px;opacity:.85; }
+    .identity-account-clear { margin-top:12px; }
+    .history-item > div:last-child { display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important; }
+    .history-item > div:last-child > small { grid-column:1/-1;grid-row:1;color:var(--muted); }
+    .history-item > div:last-child > button { margin:0;min-width:0; }
+    .media-marker span { font-size:11px;font-weight:600;letter-spacing:1px; }
+    .history-item-head { align-items:center;justify-content:flex-start;flex-wrap:wrap; }
+    .history-date { margin-left:auto;font-size:11px;color:var(--muted); }
+    .rename-version { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:5px;border:0;background:transparent;border-radius:6px;color:var(--muted);cursor:pointer; }
+    .rename-version:hover,.rename-version:focus-visible { color:var(--brand);background:var(--panel-2); }
+    .rename-version svg { width:14px;height:14px; }
+    .width-grip { position:absolute;top:76px;bottom:24px;width:12px;display:flex;align-items:center;justify-content:center;cursor:col-resize;touch-action:none;color:var(--muted);z-index:2; }
+    .width-grip::after { content:'⋮'; }
+    .width-grip:hover,.width-grip:focus-visible { background:var(--panel-2);outline:1px solid var(--line);border-radius:6px; }
+    .history-drawer,.worklist-drawer { width:min(var(--drawer-width,440px),100vw); }
+    .history-drawer .width-grip,.worklist-drawer .width-grip { left:0; }
+    .dialog-card { position:relative; }
+    dialog .width-grip { right:0; }
+    @media(max-width:640px) { .width-grip { display:none; } }
 
     @media (max-width:980px) {
       #loginView { grid-template-columns:1fr; }
@@ -387,7 +445,6 @@
       .result-card,.feedback-form,.editor-side { position:static; }
       .editor-side { display:flex;overflow:auto; }
       .editor-step { width:auto;white-space:nowrap; }
-      .agent-hero { grid-template-columns:1fr; }
     }
     @media (max-width:640px) {
       .login-story { min-height:370px;padding:25px; }
@@ -464,7 +521,7 @@
         </div>
         <div class="maintenance-banner hidden" id="maintenanceBanner">
           <div><strong>维护视角已开启</strong><span class="muted"> · 现在可以直接新增、编辑、隐藏和调整顺序；只有“发布”后普通用户才会看到。</span></div>
-          <div class="admin-mini-tools"><button class="btn" id="openManagementBtn">管理设置</button><button class="btn ghost" id="exitMaintenance">退出维护视角</button></div>
+          <div class="admin-mini-tools"><button class="btn" id="openManagementBtn">管理设置</button></div>
         </div>
         <div class="library-tools"><div class="search-box"><input class="input" id="templateSearch" placeholder="搜索模板、卖点、场景或标签"></div><div class="library-filters" id="libraryFilters"><button class="library-filter active" data-filter="all">全部</button><button class="library-filter" data-filter="favorite">收藏</button><button class="library-filter" data-filter="recent">最近使用</button><button class="library-filter" data-filter="image">图片</button><button class="library-filter" data-filter="video">视频</button><button class="btn soft" id="openWorklistBtn">本次使用 <span id="worklistCount">0</span></button></div></div>
         <div class="personal-strip"><div class="card personal-card" data-personal="recent"><strong>最近使用</strong><span id="recentSummary">还没有使用记录</span></div><div class="card personal-card" data-personal="favorite"><strong>我的收藏</strong><span id="favoriteSummary">还没有收藏模板</span></div><div class="card personal-card" id="announcementSummary"><strong>最新公告</strong><span>暂无新公告</span></div></div>
@@ -475,7 +532,7 @@
         <div class="back-line"><button class="btn ghost" id="composerBack">← 返回模板库</button><span class="muted">/</span><span id="composerBreadcrumb">模板填写</span></div>
         <div class="page-head">
           <div><span class="badge blue" id="composerBadge">通用模板</span><h1 id="composerTitle">通用远景图片提示词</h1><p id="composerDesc">只替换指定信息，保留原模板的结构、限制与示例。</p></div>
-          <div class="page-actions"><button class="icon-btn" id="composerHistoryBtn" title="查看历史版本">↺</button></div>
+          <div class="page-actions"><button class="btn ghost hidden" id="restoreComposerDraftBtn" type="button">恢复上次填写</button><button class="icon-btn" id="composerHistoryBtn" title="查看历史版本">↺</button></div>
         </div>
         <div class="composer-layout">
           <form class="card form-card" id="composerForm">
@@ -524,13 +581,6 @@
         </div>
       </section>
 
-      <section class="view" id="view-agent">
-        <div class="card agent-hero">
-          <div><span class="badge blue">独立子页面 · 内测中</span><h1>智能提示词助手</h1><p class="muted">用于从模糊需求出发，补全场景方向、动作设计和真实感限制。模板库仍是主入口，助手不会阻挡固定模板的直接使用。</p><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:20px"><button class="btn primary" id="agentTryBtn">查看交互草案</button><button class="btn" data-view="library">先使用模板库</button></div></div>
-          <div class="agent-chat"><div class="fake-message user">女款鞋，宽头卖点，提供至少3种表现形式</div><div class="fake-message">我会先补充适配的场景与动作方向，再输出可发送给生图 AI 的完整对话提示词。</div><div class="fake-message">当前未接模型 API，因此不会产生调用费用。</div></div>
-        </div>
-        <div class="empty" style="margin-top:18px"><strong>后端接入后开放</strong><br>管理员可控制入口显示、模型供应商、系统提示词版本、额度与日志策略。</div>
-      </section>
 
       <section class="view admin-only" id="view-editor">
         <div class="back-line"><button class="btn ghost" data-view="library">← 返回模板库</button><span class="muted">/</span><span>模板编辑器</span></div>
@@ -552,8 +602,8 @@
               <div class="bracket-list" id="bracketList"><div class="empty">点击“识别全部【】”后在这里配置。</div></div>
             </div>
             <details class="advanced-box" style="margin-top:14px"><summary>高级字段配置 <button class="help-icon" id="jsonHelpBtn" type="button" title="查看JSON说明">?</button></summary><p class="muted">可搜索并修改字段行为；JSON同步控制前台控件、必填检查和最终输出。常用操作仍建议使用可视化界面。</p><input class="input" id="jsonSearch" placeholder="搜索场景、chips-multi、optional或字段序号" style="margin-bottom:8px"><textarea class="textarea" id="advancedFieldJson" placeholder="识别字段后会在这里生成配置 JSON"></textarea><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" type="button" id="applyFieldJsonBtn">应用 JSON 配置</button><button class="btn" type="button" id="formatFieldJsonBtn">格式化</button></div></details>
-            <p class="muted" style="margin-top:16px">小调整选择“更新当前版本”，保留版本名称并合并使用统计；需要单独保留的调整选择“发布新版本”。两者都会更新前台，已打开的填写内容不会被强制替换。</p>
-            <div class="editor-footer" id="editorPublish"><div><button class="btn danger-btn" type="button" id="deleteTemplateBtn">删除模板</button></div><div><button class="btn" type="button" data-view="library">取消</button><button class="btn" type="button" id="previewDraftBtn">前台试填</button><button class="btn soft" type="button" id="saveDraftBtn">保存草稿</button><button class="btn soft" type="button" id="updateCurrentVersionBtn" title="小调整直接更新当前版本，不新增历史条目">更新当前版本</button><button class="btn primary" type="submit">发布新版本</button></div></div>
+            <p id="editorDraftState" class="muted" role="status"></p><p class="muted" style="margin-top:16px">小调整选择“更新当前版本”，保留版本名称并合并使用统计；需要单独保留的调整选择“发布新版本”。两者都会更新前台，已打开的填写内容不会被强制替换。</p>
+            <div class="editor-footer" id="editorPublish"><div><button class="btn danger-btn" type="button" id="deleteTemplateBtn">删除模板</button></div><div><button class="btn" type="button" data-view="library">取消</button><button class="btn" type="button" id="previewDraftBtn">前台试填</button><button class="btn ghost" type="button" id="restorePublishedDraftBtn">恢复已发布内容</button><button class="btn soft" type="button" id="saveDraftBtn">保存草稿</button><button class="btn soft" type="button" id="updateCurrentVersionBtn" title="小调整直接更新当前版本，不新增历史条目">更新当前版本</button><button class="btn primary" type="submit">发布新版本</button></div></div>
           </form>
         </div>
       </section>
@@ -568,9 +618,9 @@
 
   <dialog id="identityDialog">
     <div class="dialog-card">
-      <div class="dialog-head"><div><h2>当前身份</h2><p class="muted" style="margin:0">当前浏览器保持登录；退出后需重新输入账号和密码。</p></div><button class="icon-btn" data-close-dialog>×</button></div>
+      <div class="dialog-head"><div><h2>当前身份</h2><p class="muted" style="margin:0">点击已保留的账号直接切换；其他账号可通过下方“切换账号”登录。</p></div><button class="icon-btn" data-close-dialog>×</button></div>
       <div id="identitySummary"></div>
-      <div class="dialog-actions"><button class="btn" id="openChangePassword">修改密码</button><button class="btn danger-btn" id="logoutBtn">退出登录</button></div>
+      <div class="dialog-actions"><button class="btn" id="switchAccountBtn">切换账号</button><button class="btn danger-btn" id="logoutBtn">退出登录</button></div>
     </div>
   </dialog>
 
@@ -583,7 +633,6 @@
     </form>
   </dialog>
   <dialog id="deletePointDialog"><div class="dialog-card"><div class="dialog-head"><h2>删除卖点</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><p id="deletePointMessage"></p><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn danger-btn" id="confirmDeletePoint" type="button">确认删除</button></div></div></dialog>
-  <dialog id="personalPointDialog"><div class="dialog-card"><div class="dialog-head"><div><h2>我的卖点顺序</h2><p class="muted">仅影响当前账号在此浏览器中的顺序。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div id="personalPointList"></div><div class="dialog-actions"><button class="btn" id="resetPointOrder" type="button">恢复默认顺序</button><button class="btn primary" type="button" data-close-dialog>完成</button></div></div></dialog>
 
   <dialog id="helpDialog">
     <div class="dialog-card">
@@ -592,13 +641,6 @@
     </div>
   </dialog>
 
-  <dialog id="agentDialog">
-    <div class="dialog-card">
-      <div class="dialog-head"><div><h2>助手入口的正确定位</h2><p class="muted" style="margin:0">它不是固定模板的替代品。</p></div><button class="icon-btn" data-close-dialog>×</button></div>
-      <p>固定模板继续零 API 成本地使用；只有在运营不知道场景、动作或需要连续讨论时，才进入智能助手并产生模型调用。</p>
-      <div class="empty">示例：已有脚本，希望提取每个镜头的图片提示词 → 助手先识别镜头，再追问缺失信息，最后输出可继续发送给识图 AI 的对话提示词。</div>
-    </div>
-  </dialog>
 
   <dialog id="fieldRuleDialog">
     <form class="dialog-card" id="fieldRuleForm">
@@ -643,28 +685,26 @@
 
   <dialog id="credentialDialog"><div class="dialog-card"><div class="dialog-head"><div><h2 id="credentialTitle">新密码已生成</h2><p class="muted" style="margin:0">账号与密码仅本次显示。复制后请通过内部渠道发送给对应人员。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="rule-preview" id="credentialOutput"></div><div class="notice" style="margin-top:12px">旧登录状态已失效；关闭此窗口后，无法再次查看本次密码。</div><div class="dialog-actions"><button class="btn" id="copyCredentialBtn">复制账号和新密码</button><button class="btn primary" type="button" data-close-dialog>我已复制</button></div></div></dialog>
 
-  <dialog id="changePasswordDialog"><form class="dialog-card" id="changePasswordForm"><div class="dialog-head"><div><h2>修改密码</h2><p class="muted" style="margin:0">请输入当前密码后设置新的六位数字密码。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="field"><label>当前密码</label><input class="input" type="password" id="currentPassword" required></div><div class="form-two" style="margin-top:12px"><div class="field"><label>新密码</label><input class="input" type="password" id="nextPassword" inputmode="numeric" placeholder="六位数字" required></div><div class="field"><label>确认新密码</label><input class="input" type="password" id="confirmPassword" inputmode="numeric" placeholder="再次输入" required></div></div><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">确认修改</button></div></form></dialog>
+  <dialog id="switchAccountDialog"><form class="dialog-card" id="switchAccountForm"><div class="dialog-head"><div><h2>切换账号</h2><p class="muted">使用目标账号的真实权限；取消或密码错误不会退出当前账号。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="field"><label for="switchUsername">目标账号</label><input class="input" id="switchUsername" autocomplete="username" list="recentAccountNames" required><datalist id="recentAccountNames"></datalist></div><div class="field" style="margin-top:12px"><label for="switchPassword">密码</label><input class="input" type="password" id="switchPassword" autocomplete="current-password" required></div><p id="switchAccountError" class="reply-error" role="alert"></p><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">确认切换</button></div></form></dialog>
 
   <dialog id="announcementDialog"><form class="dialog-card" id="announcementForm"><div class="dialog-head"><div><h2 id="announcementFormTitle">发布公告</h2><p class="muted" style="margin:0">图片将作为公告附件展示，可直接点击查看。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="field"><label for="announcementTitle">标题</label><input class="input" id="announcementTitle" required></div><div class="field" style="margin-top:12px"><label for="announcementBody">正文</label><textarea class="textarea" id="announcementBody" required placeholder="输入公告内容，也可以在此粘贴截图"></textarea></div><label class="upload-box" for="announcementImages" tabindex="0"><strong>＋ 添加公告图片</strong><small>点击选择，或在正文中粘贴截图；支持 PNG、JPEG，最多 50 张，每张不超过 10 MB。</small><input class="sr-only" id="announcementImages" type="file" accept="image/png,image/jpeg" multiple><span class="upload-preview" id="announcementUploadPreview" aria-live="polite"></span></label><label class="check"><input type="checkbox" id="announcementImagesClear"> 删除此前图片</label><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">保存公告</button></div></form></dialog>
   <dialog id="announcementViewDialog"><div class="dialog-card"><div class="dialog-head"><h2>公告详情</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><div id="announcementViewContent"></div></div></dialog>
   <dialog id="helpEditDialog"><form class="dialog-card" id="helpEditForm"><div class="dialog-head"><h2>编辑使用说明</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><label for="helpEditText">使用说明正文</label><textarea class="textarea" id="helpEditText" rows="8" required></textarea><label class="upload-box" for="helpImageFiles" tabindex="0"><strong>＋ 添加教学图片</strong><br><small>点击选择，或粘贴截图；支持 PNG、JPEG，每张不超过 10 MB</small><input class="sr-only" id="helpImageFiles" type="file" accept="image/png,image/jpeg" multiple><span id="helpUploadPreview" class="upload-preview"></span></label><label class="check"><input id="helpImagesClear" type="checkbox"> 清除已保存图片</label><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">保存说明</button></div></form></dialog>
-  <dialog id="announcementInbox"><div class="dialog-card"><div class="inbox-heading"><h2>消息</h2><button class="btn" id="readAllAnnouncements" type="button">全部已读</button><button class="btn" id="hideSelectedAnnouncements" type="button">移除选中</button><button class="icon-btn" type="button" data-close-dialog aria-label="关闭消息">×</button></div><div class="board-tabs"><button class="board-tab active" id="inboxPublic" type="button">公告</button><button class="board-tab" id="inboxPersonal" type="button">我的通知</button></div><small class="muted">移除仅影响自己的列表。</small><div id="inboxMessage" role="status"></div><div id="announcementInboxList"></div></div></dialog>
+  <dialog id="announcementInbox"><div class="dialog-card"><div class="inbox-heading"><h2>消息</h2><button class="btn" id="readAllAnnouncements" type="button">全部已读</button><button class="btn" id="hideSelectedAnnouncements" type="button">移除选中</button><button class="icon-btn" type="button" data-close-dialog aria-label="关闭消息">×</button></div><div class="board-tabs"><button class="board-tab active" id="inboxPublic" type="button">公告</button><button class="board-tab" id="inboxPersonal" type="button">我的通知</button></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0"><label class="check" style="font-size:13px"><input type="checkbox" id="selectAllInbox"> 全选</label><small id="inboxSelectionCount" class="muted" aria-live="polite"></small></div><small class="muted">移除仅影响自己的列表。</small><div id="inboxMessage" role="status"></div><div id="announcementInboxList"></div></div></dialog>
   <dialog id="userDetailsDialog"><div class="dialog-card"><div class="dialog-head"><h2>用户信息</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><div id="userDetailsContent"></div><div class="dialog-actions" id="userDetailsActions"></div></div></dialog>
-  <dialog id="roleEditDialog"><form class="dialog-card" id="roleEditForm"><div class="dialog-head"><h2>修改用户角色</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><p id="roleEditName"></p><label for="roleEditValue">角色</label><select class="select" id="roleEditValue"><option value="user">普通用户</option><option value="maintainer">管理者</option><option value="admin">超级管理员</option></select><div class="dialog-actions"><button type="button" class="btn" data-close-dialog>取消</button><button class="btn primary" type="submit">保存角色</button></div></form></dialog>
   <dialog id="resolveDialog"><form class="dialog-card" id="resolveForm"><div class="dialog-head"><h2>标记已解决</h2><button class="icon-btn" type="button" data-close-dialog>×</button></div><p>确认沟通完成并标记已解决？提交者之后仍可重新打开问题并补充说明。</p><p class="muted">如需说明解决办法，可先在反馈对话中回复；此处不强制留言。</p><p id="resolveError" class="muted" role="alert" aria-live="polite"></p><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">确认已解决</button></div></form></dialog>
 
   <dialog id="feedbackTypeDialog"><form class="dialog-card" id="feedbackTypeForm"><div class="dialog-head"><div><h2>新增反馈类别</h2><p class="muted" style="margin:0">示例会显示在用户填写区，帮助运营或美工说明问题。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="field"><label>类别名称</label><input class="input" id="feedbackTypeName" required></div><div class="field" style="margin-top:12px"><label>填写示例</label><textarea class="textarea" id="feedbackTypeNewExample" required></textarea></div><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" type="submit">保存类别</button></div></form></dialog>
 
   <div class="toast-stack" id="toastStack"></div>
   <script src="prompt-data.js"></script>
-  <script src="cloud-api.js?v=20261024-version-label-revision"></script>
+  <script src="cloud-api.js?v=20261026-reply-lifecycle"></script>
   <script>
     (function(){
       'use strict';
       const source = window.__PROMPT_SOURCE__ || {common:'通用提示词正文加载失败，请通过新版项目目录中的本地网页服务打开。',wideToe:'宽头模板正文加载失败。'};
-      const storeKey = 'shoePromptStudioV1';
       const state = {
-        role:'guest', user:{name:'游客',id:'guest'}, view:'library', maintenance:false, activePoint:'wide',testMode:false,
+        role:'guest', user:{name:'游客',id:'guest'}, view:'library', maintenance:false, activePoint:'wide',
         activeTemplate:null, activeTemplateData:null, previewingDraft:false, editingTemplate:null, activeBracketRule:null, workingBracketFields:[], issueFilter:'all', theme:'light', uploadUrls:[], generatedValues:null,search:'',libraryFilter:'all',bulkMode:false,bulkAnchor:null
       };
       const defaultData = {
@@ -686,15 +726,12 @@
           'common-far':[{version:1,date:'2026-09-28 10:00',note:'录入已测试的通用远景原文',body:source.common}],
           'wide-fluoro':[{version:1,date:'2026-09-28 10:05',note:'录入宽头荧光线条原文',body:source.wideToe}]
         },
-        issues:[
-          {id:'F-001',type:'模板问题',area:'宽头',text:'希望宽头模块补充不显示人物、只展示腿部或脚部的可选表现方式。',status:'processing',owner:'运营示例',date:'2026-09-27',note:'已受理，正在验证近景模板与不同机位的兼容性。',withdrawn:false},
-          {id:'F-002',type:'功能建议',area:'需求反馈',text:'希望反馈可上传生成失败的截图，便于说明问题。',status:'resolved',owner:'运营示例',date:'2026-09-25',note:'已加入多图上传入口；正式版的数量和大小由后台配置。',withdrawn:false}
-        ],
+        issues:[],
         users:[
-          
+
         ],
         passwordRequests:[], categories:['运营','美工'],
-        announcements:[{id:'A-001',title:'云端预留版试用说明',body:'本版新增模板搜索、收藏、本次使用清单、长期登录和管理员维护模拟。所有云端能力均明确标记为待接入。',image:'',date:'2026-10-16',active:true}],
+        announcements:[],
         feedbackTypes:[
           {id:'ft-template',name:'模板字段问题',example:'示例：穿着对象缺少“不出现人物”的选项，希望增加自定义输入。',active:true},
           {id:'ft-visual',name:'视觉效果问题',example:'示例：近景荧光线条遮挡鞋头纹理，希望线条向外偏移并降低亮度。',active:true},
@@ -711,16 +748,6 @@
       function qsa(sel,root){return Array.from((root||document).querySelectorAll(sel));}
       function escapeHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
       function clone(v){return JSON.parse(JSON.stringify(v));}
-      function loadData(){
-        try {
-          const saved=JSON.parse(localStorage.getItem(storeKey)||'null');
-          if(saved && saved.points && saved.templates){
-            ['users','announcements','feedbackTypes','passwordRequests','categories'].forEach(function(k){if(!saved[k])saved[k]=clone(defaultData[k]);});
-            ['favorites','recent','worklists','drafts'].forEach(function(k){if(!saved[k])saved[k]={};});if(!saved.events)saved.events=[];return saved;
-          }
-        } catch(e){}
-        return clone(defaultData);
-      }
       function saveData(){
         if(!cloudReady || !isLoggedIn())return;
         clearTimeout(preferenceTimer);
@@ -751,9 +778,7 @@
       function isSystemAdmin(){return state.role==='admin';}
       function isLoggedIn(){return state.role!=='guest';}
       function roleLabel(role){return role==='admin'?'超级管理员':role==='maintainer'?'管理者':role==='user'?'普通用户':'游客';}
-      function sixDigitPassword(){return String(Math.floor(100000+Math.random()*900000));}
-      function canResetUser(target){if(!target)return false;if(isSystemAdmin())return true;return state.role==='maintainer'&&target.role==='user';}
-      function openCredential(user,password,title){state.lastCredential={username:user.username,password:password};$('credentialTitle').textContent=title||'新密码已生成';$('credentialOutput').textContent='姓名：'+user.name+'\n账号：'+user.username+'\n新密码：'+password;openDialog('credentialDialog');}
+      function openCredential(user,password,title){state.generatedCredentials=state.generatedCredentials||{};state.generatedCredentials[user.username]=password;state.lastCredential={username:user.username,password:password};$('credentialTitle').textContent=title||'新密码已生成';$('credentialOutput').textContent='姓名：'+user.name+'\n账号：'+user.username+'\n密码：'+password;openDialog('credentialDialog');}
       function statusLabel(s){return s==='withdrawn'?'已撤回':s==='resolved'?'已解决':s==='awaiting_confirmation'?'待提交者确认':s==='processing'?'处理中':'待解决';}
       function setRole(role,sourceName){
         state.role=role;
@@ -773,11 +798,10 @@
         $('feedbackIdentityHint').textContent=isLoggedIn()?'可提交反馈并管理自己提交的内容':'登录后可提交与管理自己的反馈';
         $('feedbackForm').classList.toggle('is-disabled',!isLoggedIn());
         qsa('#feedbackForm input,#feedbackForm select,#feedbackForm textarea,#feedbackForm button').forEach(function(el){el.disabled=!isLoggedIn();});
-        qsa('#roleCards .role-card').forEach(function(el){el.classList.toggle('active',el.dataset.role===state.role);});
       }
       function showApp(role,name,remember){
         $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
-        state.testMode=false;
+
         setRole(role,name);navigate('library');
       }
       async function loadCloudData(user){
@@ -789,7 +813,7 @@
         data.templates=published.map(function(t){return Object.assign({},t.content,{id:t.id,title:t.title,type:t.media_type,pointId:t.selling_point_id||'general',version:t.version,versionName:t.version_name,revision:t.revision,status:'published',order:t.position||0,sourceKey:null});});
         adminTemplates.forEach(function(row){let t=data.templates.find(function(x){return x.id===row.id;});if(!t){t=Object.assign({},row.draft&&row.draft.content||{},{id:row.id,title:row.title,type:row.media_type,pointId:row.selling_point_id||'general',version:row.published_version||0,status:'draft',order:row.position||0,sourceKey:null});data.templates.push(t);}if(row.draft)t.draft=row.draft.content;});
         data.issues=issues.map(function(i){return {id:i.id,type:i.category,area:i.announcement_title?'公告：'+i.announcement_title:i.template_id||'其他',text:i.content,status:i.status,owner:i.author_name||i.author_id||'匿名用户',ownerId:i.author_id,date:String(i.created_at||'').slice(0,10),withdrawn:i.status==='withdrawn',resolvedAt:i.resolved_at};});
-        data.announcements=notices.map(function(a){return {id:a.id,title:a.title,body:a.content,images:a.images||[],date:String(a.created_at||'').slice(0,10),active:a.status==='published',updatedAt:a.updated_at,audienceUserId:a.audience_user_id,readAt:a.read_at,readMethod:a.read_method};});
+        data.announcements=notices.map(function(a){return {id:a.id,title:a.title,body:a.content,feedbackId:a.feedback_id,messageId:a.feedback_message_id,images:a.images||[],date:String(a.created_at||'').slice(0,10),active:a.status==='published',updatedAt:a.updated_at,audienceUserId:a.audience_user_id,readAt:a.read_at,readMethod:a.read_method};});
         data.helpText=results[6].text;data.helpImageIds=results[6].images||[];data.helpImages=data.helpImageIds.map(function(id){return '/shoe-api/help/images/'+encodeURIComponent(id);});
         if(results[7].length)data.feedbackTypes=results[7];
         ['favorites','recent','worklists','drafts','pointOrders','announcementUsers'].forEach(function(key){data[key]={};if(prefs[key])data[key][user.id]=prefs[key];});
@@ -798,6 +822,7 @@
         cloudReady=true;
       }
       function navigate(view){
+        if(state.view==='editor'&&view!=='editor'){if(!state.skipEditorRecovery)captureEditorRecovery();state.skipEditorRecovery=false;}
         if(view==='admin' && !isAdmin()){toast('该区域仅管理员可见');return;}
         if(view==='feedback' && !isLoggedIn()){/* allow reading board */}
         state.view=view;
@@ -808,8 +833,8 @@
         window.scrollTo({top:0,behavior:'smooth'});
       }
       function visualFor(t){
-        const kind=t.type==='video'?'▶':'▱';
-        return '<div class="visual '+(t.id==='wide-fluoro'?'wide ':'')+(t.status!=='published'?'pending':'')+'"><span class="shoe">'+kind+'</span><span class="lines">⌁⌁⌁</span></div>';
+        const video=t.type==='video',icon=video?'<path d="M8 5.5a1 1 0 0 1 1.5-.86l11 6.5a1 1 0 0 1 0 1.72l-11 6.5A1 1 0 0 1 8 18.5z" fill="currentColor" stroke="none"/>':'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="4"/>';
+        return '<div class="visual media-marker" role="img" aria-label="'+(video?'视频':'图片')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+icon+'</svg></div>';
       }
       function statusBadge(t){
         if(t.status==='published')return '<span class="badge green">已发布 · '+escapeHtml(t.versionName||('v'+(t.version||1)))+'</span>';
@@ -817,7 +842,7 @@
         return '<span class="badge amber">待完善</span>';
       }
       function toolButtons(t){
-        return '<div class="card-tools"><button class="mini-tool move-left" data-id="'+t.id+'" title="前移">←</button><button class="mini-tool move-right" data-id="'+t.id+'" title="后移">→</button><button class="mini-tool edit-template" data-id="'+t.id+'" title="编辑">✎</button></div>';
+        return '<div class="card-tools"><button class="mini-tool edit-template" data-id="'+t.id+'" title="编辑">✎</button></div>';
       }
       function templateCard(t){
         const disabled=t.status!=='published'&&!isAdmin();
@@ -829,14 +854,29 @@
       async function refreshNotices(){
         if(!cloudReady||noticesLoading||document.hidden)return;noticesLoading=true;const identity=currentUserKey();
         try{const notices=await ShoeCloud.announcements();if(identity!==currentUserKey())return;const previous=new Set((data.announcements||[]).map(function(a){return a.id;}));
-          data.announcements=notices.map(function(a){return {id:a.id,title:a.title,body:a.content,images:a.images||[],date:String(a.created_at||'').slice(0,10),active:a.status==='published',updatedAt:a.updated_at,audienceUserId:a.audience_user_id,readAt:a.read_at,readMethod:a.read_method};});
+          data.announcements=notices.map(function(a){return {id:a.id,title:a.title,body:a.content,feedbackId:a.feedback_id,messageId:a.feedback_message_id,images:a.images||[],date:String(a.created_at||'').slice(0,10),active:a.status==='published',updatedAt:a.updated_at,audienceUserId:a.audience_user_id,readAt:a.read_at,readMethod:a.read_method};});
           const s=announcementState();data.announcements.forEach(function(a){if(a.readAt&&new Date(a.readAt)>=new Date(a.updatedAt))s.read[a.id]=String(a.updatedAt||a.date||'');});
           updatePersonalSummaries();if($('announcementInbox').open)renderInbox();
           const newPersonal=data.announcements.filter(function(a){return a.active&&a.audienceUserId===identity&&!previous.has(a.id);});if(newPersonal.length)toast('收到 '+newPersonal.length+' 条新通知，请点击右上角消息查看');
         }catch(err){/* Preserve the last fetched inbox during a temporary network interruption. */}finally{noticesLoading=false;}
       }
       function visibleAnnouncements(){const s=announcementState();return (data.announcements||[]).filter(function(a){return a.active&&!s.hidden.includes(a.id)&&(!a.audienceUserId||a.audienceUserId===currentUserKey());});}
-      function renderInbox(){const s=announcementState(),list=visibleAnnouncements().filter(function(a){return state.personalInbox?!!a.audienceUserId:!a.audienceUserId;});$('announcementInboxList').innerHTML=list.length?list.map(function(a){const unread=s.read[a.id]!==String(a.updatedAt||a.date||'');return '<div class="announcement-row '+(unread?'announcement-unread':'announcement-read')+'"><input type="checkbox" class="select-announcement" value="'+escapeHtml(a.id)+'"><button type="button" class="open-inbox-announcement" data-id="'+escapeHtml(a.id)+'">'+(unread?'● ':'')+escapeHtml(a.title)+'<br><small>'+escapeHtml(a.date||'')+' · '+escapeHtml((a.body||'').slice(0,55))+'</small></button></div>';}).join(''):'<div class="empty">暂无公告</div>';qsa('.open-inbox-announcement').forEach(function(b){b.onclick=async function(){const a=list.find(function(x){return x.id===b.dataset.id;});if(!a)return;try{await ShoeCloud.readAnnouncement(a.id,'opened');s.read[a.id]=String(a.updatedAt||a.date||'');saveData();renderInbox();updatePersonalSummaries();viewAnnouncement(a);}catch(err){toast('公告读取状态未保存');}};});}
+      function noticePreview(a){
+        if(!a.feedbackId)return '<span class="notice-preview">'+escapeHtml((a.body||'').slice(0,120))+'<span class="notice-preview-meta">'+escapeHtml(a.date||'')+'</span></span>';
+        const fields={};(a.body||'').split('\n').forEach(function(line){const i=line.indexOf('：');if(i>0)fields[line.slice(0,i)]=line.slice(i+1);});
+        const question=fields['问题']||'',reply=fields['回复']||fields['最新回复']||'';
+        const people=[fields['发起人']?'发起人：'+fields['发起人']:'',fields['回复人']?'回复人：'+fields['回复人']:''].filter(Boolean).join(' · ');
+        const details=[fields['位置']||'',fields['当前状态']||'',fields['发起时间']?'发起于 '+fields['发起时间']:a.date||''].filter(Boolean).join(' · ');
+        return '<span class="notice-preview">'+(question?'<span class="notice-preview-line">问题：'+escapeHtml(question)+'</span>':'')+(reply?'<span class="notice-preview-line">回复：'+escapeHtml(reply)+'</span>':'')+(people?'<span class="notice-preview-meta">'+escapeHtml(people)+'</span>':'')+'<span class="notice-preview-meta">'+escapeHtml(details)+'</span></span>';
+      }
+      function renderInbox(){
+        const selected=new Set(qsa('#announcementInboxList .select-announcement:checked').map(function(el){return el.value;}));
+        const s=announcementState(),list=visibleAnnouncements().filter(function(a){return state.personalInbox?!!a.audienceUserId:!a.audienceUserId;});
+        $('announcementInboxList').innerHTML=list.length?list.map(function(a){const unread=s.read[a.id]!==String(a.updatedAt||a.date||'');return '<div class="announcement-row '+(unread?'announcement-unread':'announcement-read')+'"><input type="checkbox" class="select-announcement" value="'+escapeHtml(a.id)+'"><button type="button" class="open-inbox-announcement" data-id="'+escapeHtml(a.id)+'"><strong>'+(unread?'● ':'')+escapeHtml(a.title)+'</strong>'+noticePreview(a)+'</button></div>';}).join(''):'<div class="empty">'+(state.personalInbox?'暂无通知':'暂无公告')+'</div>';
+        qsa('#announcementInboxList .select-announcement').forEach(function(el){el.checked=selected.has(el.value);el.onchange=updateInboxSelection;});updateInboxSelection();
+        qsa('.open-inbox-announcement').forEach(function(b){b.onclick=async function(){const a=list.find(function(x){return x.id===b.dataset.id;});if(!a)return;try{await ShoeCloud.readAnnouncement(a.id,'opened');s.read[a.id]=String(a.updatedAt||a.date||'');saveData();renderInbox();updatePersonalSummaries();viewAnnouncement(a);}catch(err){toast('公告读取状态未保存');}};});
+      }
+      function updateInboxSelection(){const items=qsa('#announcementInboxList .select-announcement'),count=items.filter(function(el){return el.checked;}).length,all=$('selectAllInbox');all.disabled=!items.length;all.checked=items.length>0&&count===items.length;all.indeterminate=count>0&&count<items.length;$('inboxSelectionCount').textContent=items.length?'已选 '+count+' / '+items.length+' 条':'';}
       function updatePersonalSummaries(){const recent=userList('recent'),fav=userList('favorites'),work=userList('worklists');$('recentSummary').textContent=recent.length?'最近使用 '+Math.min(recent.length,5)+' 个模板':'还没有使用记录';$('favoriteSummary').textContent=fav.length?'已收藏 '+fav.length+' 个模板':'还没有收藏模板';$('worklistCount').textContent=work.length;const s=announcementState(),list=visibleAnnouncements(),n=list.filter(function(a){return s.read[a.id]!==String(a.updatedAt||a.date||'');}).length;const personal=list.filter(function(a){return !!a.audienceUserId;}).filter(function(a){return s.read[a.id]!==String(a.updatedAt||a.date||'');}).length;$('messageUnread').classList.toggle('hidden',!n);$('messageUnread').textContent=n?String(n):'';$('messageCenterBtn').setAttribute('aria-label','消息通知'+(n?'，'+n+'条未读':''));$('inboxPublic').textContent='公告';$('inboxPersonal').textContent='我的通知'+(personal?' · '+personal:'');$('announcementSummary').innerHTML='<strong>公告'+(n?'<i class="notice-dot"></i>':'')+'</strong><span>'+(n?n+' 条未读':list.length?list.length+' 条公告':'暂无公告')+'</span>';}
       function renderLibrary(){
         const host=$('libraryContent');if(!host)return;
@@ -856,9 +896,11 @@
         if(state.search.trim()||state.libraryFilter==='recent'||state.libraryFilter==='favorite'){let found=data.templates.filter(function(t){return (isAdmin()||t.status==='published')&&templateMatches(t);});if(state.libraryFilter==='recent'){const order=userList('recent').map(function(x){return x.id;});found.sort(function(a,b){return order.indexOf(a.id)-order.indexOf(b.id);});}host.innerHTML='<section class="section-block"><div class="section-title"><h2>'+(state.search.trim()?'搜索结果':state.libraryFilter==='recent'?'最近使用':'我的收藏')+'</h2><span class="badge">'+found.length+' 个模板</span></div><div class="template-grid">'+(found.map(templateCard).join('')||'<div class="empty">暂无符合条件的模板。</div>')+'</div></section>';}
         qsa('.template-card',host).forEach(function(card){const t=findTemplate(card.dataset.template);if(!t)return;const point=t.pointId==='general'?'通用模板':((data.points.find(function(p){return p.id===t.pointId;})||{}).name||'卖点模板');const tag=document.createElement('small');tag.className='muted';tag.textContent=point+' · '+(t.type==='video'?'视频':t.type==='image'?'图片':'对话');const h=card.querySelector('h3');if(h)h.insertAdjacentElement('beforebegin',tag);});
         $('maintenanceBanner').classList.toggle('hidden',!(isAdmin()&&state.maintenance));
-        bindLibraryInteractions();if($('personalPointOrder'))$('personalPointOrder').addEventListener('click',function(){renderPersonalPointOrder();openDialog('personalPointDialog');});updatePersonalSummaries();
+        if(active&&host.querySelector('.selling-head')){const feedback=document.createElement('button');feedback.type='button';feedback.className='btn ghost';feedback.textContent='反馈此卖点';feedback.onclick=function(){startTargetFeedback(null,active,null);};host.querySelector('.selling-head').appendChild(feedback);}
+        bindLibraryInteractions();renderFeedbackAreas();updatePersonalSummaries();
       }
-      function renderPersonalPointOrder(){const defaults=data.points.slice().sort(function(a,b){return a.order-b.order;}),saved=((data.pointOrders||{})[currentUserKey()]||[]);const ids=saved.filter(function(id){return defaults.some(function(p){return p.id===id;});});defaults.forEach(function(p){if(!ids.includes(p.id))ids.push(p.id);});$('personalPointList').innerHTML=ids.map(function(id,index){const p=defaults.find(function(x){return x.id===id;});return '<div class="manage-row"><strong>'+escapeHtml(p.name)+'</strong><div><button class="btn point-order-up" type="button" data-id="'+escapeHtml(id)+'" '+(index===0?'disabled':'')+'>上移</button> <button class="btn point-order-down" type="button" data-id="'+escapeHtml(id)+'" '+(index===ids.length-1?'disabled':'')+'>下移</button></div></div>';}).join('');qsa('.point-order-up,.point-order-down',$('personalPointList')).forEach(function(b){b.onclick=function(){const i=ids.indexOf(b.dataset.id),j=i+(b.classList.contains('point-order-up')?-1:1);if(j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]];data.pointOrders=data.pointOrders||{};data.pointOrders[currentUserKey()]=ids;saveData();renderPersonalPointOrder();renderLibrary();};});}
+      function renderFeedbackAreas(){const select=$('feedbackArea'),previous=select.value;select.replaceChildren();[['general','通用模板']].concat(data.points.map(function(p){return [p.id,p.name];}),data.templates.map(function(t){return [t.id,t.title];}),[['other','其他']]).forEach(function(pair){const o=document.createElement('option');o.value=pair[0];o.textContent=pair[1];select.appendChild(o);});if(Array.from(select.options).some(function(o){return o.value===previous;}))select.value=previous;}
+      function startTargetFeedback(t,point,version){state.feedbackTemplateId=t?t.id:null;state.feedbackAnnouncement=null;state.feedbackTarget=t?('模板：'+t.title+' · 版本：'+(version?version.versionName||('v'+version.version):t.versionName||('v'+t.version))):('卖点：'+point.name);$('historyDrawer').classList.remove('open');navigate('feedback');renderFeedbackAreas();$('feedbackArea').value=t?t.id:point.id;$('noticeFeedbackContext').classList.remove('hidden');$('noticeFeedbackContext').textContent='关联'+state.feedbackTarget;$('returnToTemplate').classList.toggle('hidden',!t||state.activeTemplate!==t.id);$('feedbackText').focus();}
       function movePersonalPoint(from,to){const ids=qsa('#pointTabs .point-tab[data-point]').map(function(x){return x.dataset.point;});const i=ids.indexOf(from),j=ids.indexOf(to);if(i<0||j<0||i===j)return;ids.splice(j,0,ids.splice(i,1)[0]);data.pointOrders=data.pointOrders||{};data.pointOrders[currentUserKey()]=ids;saveData();renderLibrary();toast('个人卖点顺序已保存');}
       function bindLibraryInteractions(){
         qsa('[data-point]', $('libraryContent')).forEach(function(el){
@@ -924,6 +966,7 @@
       }
       function openComposer(id,useDraft,versionSnapshot){
         const live=findTemplate(id);if(!live)return;const t=versionSnapshot?Object.assign({},live,clone(versionSnapshot),{sourceKey:null}):useDraft&&live.draft?Object.assign({},live,clone(live.draft),{sourceKey:null}):live;state.activeTemplate=id;state.activeTemplateData=t;state.previewingDraft=!!useDraft;
+        $('restoreComposerDraftBtn').classList.add('hidden');
         document.querySelector('.composer-layout').style.removeProperty('--composer-width');try{const saved=Number(localStorage.getItem(composerWidthKey()));if(saved>0)requestAnimationFrame(function(){setComposerWidth(saved,false);});}catch(e){}
         const recent=userList('recent').filter(function(r){return r.id!==id;});recent.unshift({id:id,time:new Date().toISOString()});data.recent[currentUserKey()]=recent.slice(0,12);recordEvent('template_view',{templateId:id,version:t.version||0});
         $('composerBack').textContent=useDraft?'← 返回模板编辑':'← 返回模板库';$('composerTitle').textContent=t.title;$('composerDesc').textContent=t.description;$('composerBadge').textContent=t.pointId==='general'?'通用模板':(data.points.find(function(p){return p.id===t.pointId;})||{}).name||'卖点模板';
@@ -948,7 +991,7 @@
         const targets={shoeType:'shoeTypeCustom',scene:'sceneInput',season:'seasonInput',sellingPoint:'sellingInput'};
         Object.keys(targets).forEach(function(key){const input=$(targets[key]),related=items.filter(function(x){return x.field_key===key;}).slice(0,6);if(!input||!related.length)return;const row=document.createElement('div');row.className='chip-row personal-legacy';const title=document.createElement('small');title.className='muted';title.textContent='我的常用';row.appendChild(title);related.forEach(function(item){const button=document.createElement('button');button.type='button';button.className='chip personal-option';button.textContent=item.value;button.onclick=function(){input.value=input.value===item.value?'':item.value;};row.appendChild(button);});input.parentElement.appendChild(row);});
       }
-      async function renderDynamicComposer(t){
+      async function renderDynamicComposer(t,restoreDraft){
         state.dynamicLoading=true;$('dynamicComposerFields').innerHTML='<p class="muted">正在读取填写项…</p>';
         let personal=[];try{if(!state.previewingDraft&&t.version)personal=await ShoeCloud.suggestions(t.id,t.version);}catch(e){}
         if(state.activeTemplate!==t.id||state.activeTemplateData!==t)return;
@@ -956,12 +999,13 @@
         const spots=scanBracketPositions(templateBody(t));
         const fields=(t.bracketFields||[]).map(normalizeBracketField).filter(function(f){return f.mode!=='fixed';});
         const draft=(data.drafts[currentUserKey()]||{})[t.id]||{};
+        $('restoreComposerDraftBtn').classList.toggle('hidden',state.previewingDraft||!Object.values(draft).some(function(v){return String(v||'').length>0;}));
         $('dynamicComposerFields').innerHTML=fields.map(function(f){
           const spot=spots[f.index]||{raw:''},suggested=personal.filter(function(x){return x.field_key===String(f.index);}).slice(0,6).map(function(x){return x.value;});const options=Array.from(new Set((f.options||[]).concat(suggested)));
           const chips=options.length?'<div class="chip-row dynamic-chips" data-dynamic-group="'+f.index+'">'+options.map(function(o){return '<button class="chip '+((f.options||[]).includes(o)?'':'personal-option')+'" title="'+((f.options||[]).includes(o)?'快捷选项':'我的常用：复制时累计使用至少 3 次')+'" type="button" data-value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</button>';}).join('')+'<button class="chip chip-clear" type="button" data-clear="'+f.index+'">清空选择</button></div>':'';
           const req=f.required?'<span class="danger">必填</span>':'<span class="field-help">选填</span>';
           let control='';
-          const saved=draft[f.index]!=null?draft[f.index]:(f.defaultValue||'');
+          const saved=restoreDraft&&draft[f.index]!=null?draft[f.index]:(f.defaultValue||'');
           if(f.control==='textarea')control='<textarea class="textarea dynamic-value" data-field-index="'+f.index+'" placeholder="'+escapeHtml(f.placeholder||'可自定义填写')+'">'+escapeHtml(saved)+'</textarea>';
           else if(f.control==='switch')control='<select class="select dynamic-value" data-field-index="'+f.index+'"><option value="">关闭</option><option value="1">开启</option></select>';
           else control='<input class="input dynamic-value" data-field-index="'+f.index+'" value="'+escapeHtml(saved)+'" placeholder="'+escapeHtml(f.placeholder||spot.raw||'可自定义填写')+'">';
@@ -982,7 +1026,7 @@
           const clear=row.querySelector('[data-clear]');if(clear)clear.addEventListener('click',function(){row.querySelectorAll('.chip.selected').forEach(function(x){x.classList.remove('selected');});const input=document.querySelector('.dynamic-value[data-field-index="'+idx+'"]');if(input){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));}});
           const customInput=document.querySelector('.dynamic-value[data-field-index="'+idx+'"]');if(customInput&&f.control!=='chips-multi')customInput.addEventListener('input',function(){row.querySelectorAll('.chip.selected[data-value]').forEach(function(chip){if(chip.dataset.value!==customInput.value)chip.classList.remove('selected');});});
         });
-        qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){input.addEventListener('input',saveCurrentDraft);input.addEventListener('change',saveCurrentDraft);});
+        qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){const f=fields.find(function(f){return String(f.index)===input.dataset.fieldIndex;});if(f.control==='switch')input.value=restoreDraft?String(draft[f.index]||f.defaultValue||''):String(f.defaultValue||'');const row=document.querySelector('.dynamic-chips[data-dynamic-group="'+input.dataset.fieldIndex+'"]');if(row)qsa('.chip[data-value]',row).forEach(function(chip){chip.classList.toggle('selected',f.control==='chips-multi'?input.value.split('、').includes(chip.dataset.value):input.value===chip.dataset.value);});input.addEventListener('input',saveCurrentDraft);input.addEventListener('change',saveCurrentDraft);});
       }
       function saveCurrentDraft(){const t=state.activeTemplateData;if(!t)return;data.drafts[currentUserKey()]=data.drafts[currentUserKey()]||{};const values={};qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){values[input.dataset.fieldIndex]=input.value;});data.drafts[currentUserKey()][t.id]=values;saveData();}
       function selectedOrCustom(selectId,customId){return $(customId).value.trim()||$(selectId).value.trim();}
@@ -1052,15 +1096,21 @@
         navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text).then(finish).catch(function(){fallbackCopy(text);finish();}):(fallbackCopy(text),finish());
       }
       function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
-      function openEditor(id,isNew){
+      function editorRecoveryKey(id){return 'shoe-admin-draft:'+currentUserKey()+':'+id;}
+      function readEditorRecovery(id){try{return JSON.parse(localStorage.getItem(editorRecoveryKey(id))||'null');}catch(e){return null;}}
+      function clearEditorRecovery(id){try{localStorage.removeItem(editorRecoveryKey(id));}catch(e){}}
+      function captureEditorRecovery(){if(state.view!=='editor'||!isAdmin()||state.openingEditor)return;const snapshot=collectEditor();if(!snapshot)return;try{localStorage.setItem(editorRecoveryKey(state.editingTemplate),JSON.stringify({snapshot:snapshot,json:$('advancedFieldJson').value,stamp:new Date().toISOString()}));$('editorDraftState').textContent='编辑中 · 已在本机暂存；点击“保存草稿”可保存到服务器，不影响已发布内容';}catch(e){$('editorDraftState').textContent='本机暂存失败，请点击保存草稿';}}
+      function installExpandablePanels(){qsa('dialog:not(#identityDialog):not(#switchAccountDialog) .dialog-card,.history-drawer,.worklist-drawer').forEach(function(panel){if(panel.querySelector(':scope > .width-grip'))return;const drawer=panel.classList.contains('history-drawer')||panel.classList.contains('worklist-drawer'),original=panel.style.width,grip=document.createElement('span');grip.className='width-grip';grip.tabIndex=0;grip.setAttribute('role','separator');grip.setAttribute('aria-orientation','vertical');grip.setAttribute('aria-label','左右拖动加宽窗口，方向键可调整，双击恢复');grip.title='左右拖动调整宽度；双击恢复默认';panel.appendChild(grip);function apply(width){const maximum=window.innerWidth-(drawer?16:32);panel.style.width=Math.max(Math.min(360,maximum),Math.min(maximum,width))+'px';panel.style.maxWidth='calc(100vw - '+(drawer?16:32)+'px)';}grip.onpointerdown=function(e){if(e.button!==0)return;e.preventDefault();e.stopPropagation();const start=e.clientX,width=panel.getBoundingClientRect().width;grip.setPointerCapture(e.pointerId);const move=function(ev){apply(width+(ev.clientX-start)*(drawer?-1:2));};const done=function(){grip.removeEventListener('pointermove',move);grip.removeEventListener('pointerup',done);grip.removeEventListener('pointercancel',done);};grip.addEventListener('pointermove',move);grip.addEventListener('pointerup',done);grip.addEventListener('pointercancel',done);};grip.onkeydown=function(e){if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();apply(panel.getBoundingClientRect().width+(e.key==='ArrowLeft'?-40:40)*(drawer?-1:1));};grip.ondblclick=function(){panel.style.width=original;panel.style.removeProperty('max-width');};});}
+      async function openEditor(id,isNew){
         if(!isAdmin()){toast('只有管理员可以编辑模板');return;}
-        const t=findTemplate(id);if(!t)return;state.editingTemplate=id;
-        const working=t.draft||t;state.workingBracketFields=clone(working.bracketFields||t.bracketFields||[]);
+        if(state.view==='editor')captureEditorRecovery();state.openingEditor=true;
+        const t=findTemplate(id);if(!t){state.openingEditor=false;return;}state.editingTemplate=id;
+        if(!isNew)try{const result=await ShoeCloud.draft(id);if(result.draft)t.draft=result.draft.content;else delete t.draft;}catch(err){if(err.status!==404)toast('云端草稿读取失败，正在显示本机保留内容');}const recovery=readEditorRecovery(id);const working=recovery&&recovery.snapshot||t.draft||t;state.workingBracketFields=clone(working.bracketFields||t.bracketFields||[]);
         $('editorPageTitle').textContent=(isNew?'新增':'编辑')+'模板';
-        $('editTitle').value=working.title||t.title;$('editDescription').value=working.description||t.description||'';$('editType').value=working.type||t.type||'image';$('editVisibility').value=t.status||'draft';$('editBody').value=working.body!=null?working.body:templateBody(t);
+        $('editTitle').value=working.title??t.title;$('editDescription').value=working.description??t.description??'';$('editType').value=working.type||t.type||'image';$('editVisibility').value=t.status||'draft';$('editBody').value=working.body!=null?working.body:templateBody(t);
         $('updateCurrentVersionBtn').disabled=!t.version;
-        $('editPoint').innerHTML='<option value="general">通用模板</option>'+data.points.sort(function(a,b){return a.order-b.order;}).map(function(p){return '<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>';}).join('');$('editPoint').value=t.pointId;
-        renderEditFields(working.fields||t.fields||[]);renderBracketStudio(t);navigate('editor');
+        $('editPoint').innerHTML='<option value="general">通用模板</option>'+data.points.sort(function(a,b){return a.order-b.order;}).map(function(p){return '<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>';}).join('');$('editPoint').value=working.pointId||t.pointId;
+        renderEditFields(working.fields||t.fields||[]);renderBracketStudio(t);if(recovery&&recovery.json)$('advancedFieldJson').value=recovery.json;$('restorePublishedDraftBtn').disabled=!t.version;$('editorDraftState').textContent=recovery?'已恢复本机编辑暂存；正式内容未改变':t.draft?'已载入上次保存的云端草稿；正式内容未改变':'正在编辑已发布内容；修改后可先保存草稿';navigate('editor');state.openingEditor=false;
       }
       const fieldNames={shoeType:'鞋子类型 / 穿着对象',scene:'场景',season:'季节 / 节日',sellingPoint:'卖点',multiProduct:'多款产品展示',count:'方案数量',extra:'其他要求'};
       function renderEditFields(fields){
@@ -1073,9 +1123,10 @@
         const spots=scanBracketPositions($('editBody').value),rules=new Map((state.workingBracketFields||[]).map(function(f){return [Number(f.index),f];}));
         $('selectAllBrackets').checked=false;$('selectedBracketCount').textContent='已选 0 项';state.bulkAnchor=null;
         $('bracketList').innerHTML=spots.length?spots.map(function(spot){
-          const f=rules.get(spot.index),pending=!f;return '<div class="bracket-row '+(pending?'pending':'')+(state.bulkMode?' bulk-mode':'')+'" data-index="'+spot.index+'"><span class="mode-check">✓</span><span class="bracket-number">'+(spot.index+1)+'</span><code title="'+escapeHtml(spot.full)+'">'+escapeHtml(spot.full)+'</code><div class="bracket-actions"><span class="badge '+(pending?'amber':'green')+'">'+(pending?'待确认':escapeHtml(ruleModeLabel(f.mode)))+'</span><span class="muted">›</span></div></div>';
+          const f=rules.get(spot.index),pending=!f;return '<div class="bracket-row '+(pending?'pending':'')+(state.bulkMode?' bulk-mode':'')+'" data-index="'+spot.index+'"><span class="mode-check">✓</span><span class="bracket-number">'+(spot.index+1)+'</span><code title="'+escapeHtml(spot.full)+'">'+escapeHtml(spot.full)+'</code><div class="bracket-actions"><span class="badge '+(pending?'amber':'green')+'">'+(pending?'待确认':escapeHtml(ruleModeLabel(f.mode)))+'</span>'+(!pending&&f.mode!=='fixed'?'<span class="badge">'+(f.required?'必填':'选填')+'</span>':'')+'<span class="muted">›</span></div></div>';
         }).join(''):'<div class="empty">正文中没有找到成对的【】。可以保存为无字段的纯文本模板。</div>';
         qsa('.bracket-row',$('bracketList')).forEach(function(row){row.addEventListener('click',function(e){const index=Number(row.dataset.index);if(!state.bulkMode){openFieldRule(index);return;}if(e.shiftKey&&state.bulkAnchor!=null){const a=Math.min(state.bulkAnchor,index),b=Math.max(state.bulkAnchor,index);qsa('.bracket-row',$('bracketList')).forEach(function(r){const n=Number(r.dataset.index);if(n>=a&&n<=b)r.classList.add('bulk-selected');});}else{row.classList.toggle('bulk-selected');state.bulkAnchor=index;}updateBracketSelection();});});
+        qsa('.bracket-actions .badge',$('bracketList')).forEach(function(b){if(b.textContent==='必填')b.classList.add('field-required');if(b.textContent==='选填')b.classList.add('field-optional');});
         syncBracketJson({bracketFields:state.workingBracketFields});
       }
       function ruleModeLabel(mode){return {fixed:'保持原文',replace:'替换内容',prefix:'保留前缀',optional:'选填删除',block:'整块开关'}[mode]||'待确认';}
@@ -1110,22 +1161,23 @@
         return {title:$('editTitle').value.trim(),description:$('editDescription').value.trim(),type:$('editType').value,pointId:$('editPoint').value,body:$('editBody').value,fields:qsa('.edit-field-name').map(function(i){return i.dataset.key||i.value.trim();}),bracketFields:clone(state.workingBracketFields||[]),updated:new Date().toISOString().slice(0,10)};
       }
       async function saveEditor(publish,updateCurrent){
-        const snapshot=collectEditor(),t=findTemplate(state.editingTemplate);if(!snapshot||!snapshot.title||!snapshot.body){toast('请填写模板名称与正文');return;}
+        const snapshot=collectEditor(),t=findTemplate(state.editingTemplate);if(!snapshot)return;if(publish&&(!snapshot.title||!snapshot.body.trim())){toast('发布前请填写模板名称与正文；未完成时可保存草稿');return;}
         const spots=scanBracketPositions(snapshot.body),configured=new Set((snapshot.bracketFields||[]).map(function(f){return Number(f.index);})),pending=spots.filter(function(s){return !configured.has(s.index);});
         if(publish&&pending.length){toast('还有 '+pending.length+' 个【】位置未人工确认');renderBracketStudio(t);return;}
         try{
-          await ShoeCloud.saveDraft(t.id,{title:snapshot.title,media_type:snapshot.type,selling_point_id:snapshot.pointId==='general'?null:snapshot.pointId,content:snapshot});
+          await ShoeCloud.saveDraft(t.id,{title:snapshot.title||t.title||'未命名模板',media_type:snapshot.type,selling_point_id:snapshot.pointId==='general'?null:snapshot.pointId,content:snapshot});
           if(publish){const result=await ShoeCloud.publish(t.id,!!updateCurrent);Object.assign(t,snapshot,{status:'published',sourceKey:null,version:result.version,versionName:result.version_name,revision:result.revision});delete t.draft;delete t.draftTested;$('editVisibility').value='published';}
-          else {t.draft=snapshot;if(t.status!=='published')t.status='draft';t.draftTested=false;$('editVisibility').value=t.status;}
-          renderLibrary();updateStats();toast(publish?(updateCurrent?'当前版本已更新，未新增版本':'新版本已发布'):'草稿已保存到服务器');if(publish)navigate('library');return true;
+          else {t.draft=snapshot;if(t.status!=='published')Object.assign(t,snapshot,{status:'draft',sourceKey:null});t.draftTested=false;$('editVisibility').value=t.status;}
+          clearEditorRecovery(t.id);$('editorDraftState').textContent=publish?'已发布':'云端草稿已保存，未完成的内容也已保留';renderLibrary();updateStats();toast(publish?(updateCurrent?'当前版本已更新，未新增版本':'新版本已发布'):'草稿已保存到服务器');if(publish){state.skipEditorRecovery=true;navigate('library');}return true;
         }catch(err){toast('保存失败，请检查字段和网络；内容未发布');return false;}
       }
       async function openHistory(id){
         const t=findTemplate(id||state.activeTemplate||state.editingTemplate);if(!t){toast('暂无模板历史');return;}
         try{const versions=await ShoeCloud.versions(t.id);data.versions[t.id]=versions.map(function(v){return Object.assign({},v.content,{version:v.version,versionName:v.version_name,revision:v.revision,date:v.published_at,note:'已发布版本'});});}catch(err){toast('版本历史加载失败');return;}
         const list=data.versions[t.id]||[];
-        $('historyList').innerHTML=list.length?list.map(function(v){const name=v.versionName||('v'+v.version);return '<div class="history-item"><div class="history-item-head"><strong>'+escapeHtml(name)+'</strong>'+(isAdmin()?'<button class="btn ghost rename-version" title="修改版本名称" data-version="'+v.version+'" type="button">✎</button>':'')+'<span class="badge">'+escapeHtml(v.date)+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+(v.revision>1?' · 已进行 '+(v.revision-1)+' 次小调整':'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button><button class="btn ghost clear-version-stats" data-version="'+v.version+'">清理统计</button>'+(Number(v.version)!==Number(t.version)?'<button class="btn danger-btn delete-version" data-template="'+t.id+'" data-version="'+v.version+'">删除版本</button>':'<small class="muted">当前发布版本</small>'):'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
+        $('historyList').innerHTML=list.length?list.map(function(v){const name=v.versionName||('v'+v.version);return '<div class="history-item"><div class="history-item-head"><strong>'+escapeHtml(name)+'</strong>'+(isAdmin()?'<button class="btn ghost rename-version" title="修改版本名称" data-version="'+v.version+'" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 4l5 5M4 20l4-1 12-12-4-4L4 15z"/></svg></button>':'')+'<span class="history-date">'+escapeHtml(new Date(v.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}))+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+(v.revision>1?' · 已进行 '+(v.revision-1)+' 次小调整':'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button><button class="btn ghost clear-version-stats" data-version="'+v.version+'">清理统计</button>'+(Number(v.version)!==Number(t.version)?'<button class="btn danger-btn delete-version" data-template="'+t.id+'" data-version="'+v.version+'">删除版本</button>':'<small class="muted">当前发布版本</small>'):'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
         $('historyDrawer').classList.add('open');
+        qsa('.history-item',$('historyList')).forEach(function(row,index){const b=document.createElement('button');b.type='button';b.className='btn ghost';b.textContent='反馈此版本';b.onclick=function(){startTargetFeedback(t,null,list[index]);};row.lastElementChild.appendChild(b);});
         qsa('.rename-version').forEach(function(button){button.onclick=function(){const version=Number(button.dataset.version),v=list.find(function(x){return x.version===version;}),head=button.closest('.history-item-head');if(head.querySelector('input'))return;const input=document.createElement('input');input.className='input';input.maxLength=60;input.value=v.versionName||('v'+version);input.setAttribute('aria-label','版本名称');const save=document.createElement('button');save.className='btn soft';save.textContent='保存名称';const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent='取消';const error=document.createElement('p');error.className='reply-error';button.closest('.history-item').appendChild(error);save.onclick=async function(){save.disabled=true;try{const result=await ShoeCloud.renameVersion(t.id,version,input.value);v.versionName=result.version_name;if(Number(t.version)===version){t.versionName=result.version_name;if(state.activeTemplateData&&Number(state.activeTemplateData.version)===version)state.activeTemplateData.versionName=result.version_name;}renderLibrary();await openHistory(t.id);}catch(err){error.textContent=err.message||'名称未保存';save.disabled=false;}};cancel.onclick=function(){openHistory(t.id);};head.replaceChildren(input,save,cancel);input.focus();input.select();};});
         qsa('.clear-version-stats').forEach(function(button){button.onclick=async function(){if(!button.dataset.confirmed){button.dataset.confirmed='1';button.textContent='确认清理此版本全部统计';const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent='取消';cancel.onclick=function(){delete button.dataset.confirmed;button.textContent='清理统计';cancel.remove();};button.after(cancel);return;}try{await ShoeCloud.resetUsage(t.id,Number(button.dataset.version));button.textContent='统计已清理';button.disabled=true;}catch(err){button.textContent='清理失败，点击重试';}};});
         qsa('.delete-version').forEach(function(button){button.onclick=async function(){if(!button.dataset.confirmDelete){button.dataset.confirmDelete='1';button.textContent='确认删除 '+((list.find(function(x){return Number(x.version)===Number(button.dataset.version);})||{}).versionName||('v'+button.dataset.version));const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='取消';cancel.onclick=function(){delete button.dataset.confirmDelete;button.textContent='删除版本';cancel.remove();};button.after(cancel);return;}button.disabled=true;try{await ShoeCloud.deleteVersion(button.dataset.template,button.dataset.version);await openHistory(button.dataset.template);toast('历史版本已删除，已有统计和反馈保留');}catch(err){button.disabled=false;const message=document.createElement('p');message.className='reply-error';message.textContent=err.message||'删除失败，请重试';button.closest('.history-item').appendChild(message);}};});
@@ -1133,25 +1185,26 @@
         qsa('.restore-version').forEach(function(btn){btn.addEventListener('click',async function(){const t=findTemplate(btn.dataset.template),ver=(data.versions[t.id]||[]).find(function(v){return String(v.version)===btn.dataset.version;});if(ver){const draft=Object.assign({},clone(ver),{title:ver.title||t.title,type:ver.type||t.type,pointId:ver.pointId||t.pointId,body:ver.body,fields:clone(ver.fields||[]),bracketFields:clone(ver.bracketFields||[]),updated:new Date().toISOString().slice(0,10)});try{await ShoeCloud.saveDraft(t.id,{title:draft.title,media_type:draft.type,selling_point_id:draft.pointId==='general'?null:draft.pointId,content:draft});t.draft=draft;t.draftTested=false;$('historyDrawer').classList.remove('open');openEditor(t.id);toast('旧版已恢复为云端草稿');}catch(err){toast('恢复草稿失败');}}});});
       }
       function renderIssues(){
+        data.issues.forEach(function(i){const point=data.points.find(function(p){return p.id===i.area;}),template=findTemplate(i.area),context=(i.text||'').match(/^【(?:位置|卖点|模板)：([^】]+)】/);i.area=i.area==='general'?'通用模板':point?point.name:template?template.title:i.area==='其他'&&context?context[1]:i.area;});
         const list=data.issues.filter(function(i){
           const own=isLoggedIn()&&(i.ownerId?i.ownerId===state.user.id:i.owner===state.user.name);
           if(state.issueFilter==='withdrawn')return i.withdrawn&&(own||isAdmin());
           return !i.withdrawn&&(state.issueFilter==='all'||i.status===state.issueFilter);
         });
-        const example=state.issueFilter==='all'?'<article class="card issue example-issue"><div class="issue-head"><h3>示例 · 模板建议</h3><span class="badge blue">演示 · 不会发送</span></div><p>希望宽头模板增加公园场景选项，方便快速填写。</p><button type="button" class="btn example-toggle">体验反馈对话</button><div class="issue-detail hidden"><strong>反馈对话演示</strong><p>管理员：已收到，正在补充选项，完成后会留言说明。</p><div class="example-messages"></div><textarea class="textarea example-reply" placeholder="在这里试填回复（仅演示，不会提交）"></textarea><button type="button" class="btn example-send">试发回复</button><p class="muted">演示仅保留在当前页面，不会发送或保存。要与管理员真正沟通，请提交右侧反馈，再打开该反馈的对话。</p></div></article>':'';
-        $('issueList').innerHTML=example+(list.length?list.map(function(i){
+        $('issueList').innerHTML=(list.length?list.map(function(i){
           const displayStatus=i.withdrawn?'withdrawn':i.status;
           const badge=displayStatus==='resolved'?'green':displayStatus==='processing'?'blue':displayStatus==='withdrawn'?'':'amber';
           const own=isLoggedIn()&&(i.ownerId?i.ownerId===state.user.id:i.owner===state.user.name);
           const ownerActions=own?((i.withdrawn?'<button class="btn soft recover-issue" data-id="'+i.id+'">恢复</button>':(['pending','processing'].includes(i.status)?'<button class="btn withdraw-issue" data-id="'+i.id+'">撤回</button>':''))+(['pending','withdrawn'].includes(displayStatus)?'<button class="btn edit-issue" data-id="'+i.id+'">编辑</button><button class="btn danger-btn delete-issue" data-id="'+i.id+'">删除</button>':'')+(i.status==='awaiting_confirmation'?'<button class="btn confirm-issue" data-id="'+i.id+'">确认已解决</button><button class="btn reopen-issue" data-id="'+i.id+'">仍有问题</button>':i.status==='resolved'?'<button class="btn reopen-issue" data-id="'+i.id+'">仍有问题，重新处理</button>':'')):'';
           const adminActions=isAdmin()&&!i.withdrawn?((['pending','resolved','awaiting_confirmation'].includes(i.status)?'<button class="btn process-issue" data-id="'+i.id+'">标记处理中</button>':'')+(['pending','processing','awaiting_confirmation'].includes(i.status)?'<button class="btn soft resolve-issue" data-id="'+i.id+'">标记已解决</button>':'')):'';
-          return '<article class="card issue real-issue" data-issue="'+escapeHtml(i.id)+'"><div class="issue-head"><div><h3>'+escapeHtml(i.type)+' · '+escapeHtml(i.area)+'</h3><div class="issue-meta"><span>'+escapeHtml(i.id)+'</span><span>'+escapeHtml(i.owner)+'</span><span>'+escapeHtml(i.date)+'</span></div></div><span class="badge '+badge+'">'+statusLabel(displayStatus)+'</span></div><p>'+escapeHtml(i.text)+'</p><div class="issue-actions"><button class="btn view-issue" data-id="'+i.id+'">查看对话与图片</button>'+ownerActions+adminActions+'</div><div class="issue-detail hidden"></div></article>';
+          return '<article class="card issue real-issue" data-issue="'+escapeHtml(i.id)+'"><div class="issue-head"><div><h3>'+escapeHtml(i.type)+' · '+escapeHtml(i.area)+'</h3><div class="issue-meta"><span>'+escapeHtml(i.owner)+'</span><span>'+escapeHtml(i.date)+'</span></div></div><span class="badge '+badge+'">'+statusLabel(displayStatus)+'</span></div><p>'+escapeHtml(i.text)+'</p><div class="issue-actions"><button class="btn view-issue" data-id="'+i.id+'">查看对话与图片</button>'+ownerActions+adminActions+'</div><div class="issue-detail hidden"></div></article>';
         }).join(''):'<div class="empty">当前分类还没有反馈。</div>');
-        qsa('#issueList .real-issue').forEach(function(el,index){const i=list[index];if(i&&i.status==='resolved'&&i.resolvedAt){const meta=el.querySelector('.issue-meta');if(meta){const time=document.createElement('span');time.textContent='解决时间：'+i.resolvedAt;meta.appendChild(time);}}el.addEventListener('click',function(e){if(!e.target.closest('button, input, textarea, label, a'))openFeedbackDetails(i.id);});});const demo=$('issueList').querySelector('.example-toggle');if(demo){demo.onclick=function(){demo.nextElementSibling.classList.toggle('hidden');};const panel=demo.nextElementSibling;panel.querySelector('.example-send').onclick=function(){const field=panel.querySelector('.example-reply');if(!field.value.trim())return;const p=document.createElement('p');p.textContent='你（演示）：'+field.value.trim();panel.querySelector('.example-messages').appendChild(p);field.value='';};}bindIssueActions();updateStats();
+        qsa('#issueList .real-issue').forEach(function(el,index){const i=list[index];if(i&&i.status==='resolved'&&i.resolvedAt){const meta=el.querySelector('.issue-meta');if(meta){const time=document.createElement('span');time.textContent='解决时间：'+i.resolvedAt;meta.appendChild(time);}}el.addEventListener('click',function(e){if(!e.target.closest('button, input, textarea, label, a'))openFeedbackDetails(i.id);});});bindIssueActions();updateStats();
       }
       function bindIssueActions(){
         if(state.feedbackHasMore){const more=document.createElement('button');more.type='button';more.className='btn';more.style.marginTop='14px';more.textContent='加载更多反馈';more.onclick=async function(){more.disabled=true;try{const rows=await ShoeCloud.feedback(state.feedbackOffset||0);state.feedbackOffset=(state.feedbackOffset||0)+rows.length;state.feedbackHasMore=rows.length===50;rows.forEach(function(i){if(!data.issues.some(function(x){return x.id===i.id;}))data.issues.push({id:i.id,type:i.category,area:i.announcement_title?'公告：'+i.announcement_title:i.template_id||'其他',text:i.content,status:i.status,owner:i.author_name||i.author_id||'匿名用户',ownerId:i.author_id,date:String(i.created_at||'').slice(0,10),withdrawn:i.status==='withdrawn',resolvedAt:i.resolved_at});});renderIssues();}catch(err){more.textContent='加载失败，点击重试';more.disabled=false;}};$('issueList').appendChild(more);}
         async function transition(id,status){try{await ShoeCloud.feedbackStatus(id,status);const i=data.issues.find(function(x){return x.id===id;});i.status=status;i.withdrawn=status==='withdrawn';renderIssues();toast('反馈状态已更新');}catch(err){toast('状态未能更新，请刷新后重试');}}
+        qsa('#issueList .real-issue').forEach(function(card){const i=data.issues.find(function(x){return x.id===card.dataset.issue;});if(i&&i.status==='resolved'&&!card.querySelector('.reopen-issue')&&!isAdmin()){const b=document.createElement('button');b.type='button';b.className='btn reopen-issue';b.dataset.id=i.id;b.textContent='仍有疑问，重新处理';card.querySelector('.issue-actions').appendChild(b);}});
         [['withdraw-issue','withdrawn'],['recover-issue','pending'],['process-issue','processing'],['confirm-issue','resolved'],['reopen-issue','processing']].forEach(function(pair){qsa('.'+pair[0]).forEach(function(b){b.addEventListener('click',function(){transition(b.dataset.id,pair[1]);});});});
         qsa('.delete-issue').forEach(function(b){b.addEventListener('click',async function(){if(!b.dataset.confirmDelete){b.dataset.confirmDelete='1';b.textContent='确认删除';const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='取消';cancel.onclick=function(){delete b.dataset.confirmDelete;b.textContent='删除';cancel.remove();};b.after(cancel);return;}b.disabled=true;try{await ShoeCloud.deleteFeedback(b.dataset.id);data.issues=data.issues.filter(function(x){return x.id!==b.dataset.id;});renderIssues();toast('反馈已删除');}catch(err){b.disabled=false;toast('当前反馈无法删除');}});});
         qsa('.edit-issue').forEach(function(b){b.addEventListener('click',async function(){const i=data.issues.find(function(x){return x.id===b.dataset.id;});const text=prompt('修改反馈内容',i.text);if(text===null||!text.trim())return;try{await ShoeCloud.editFeedback(i.id,text.trim());i.text=text.trim();renderIssues();toast('反馈已更新');}catch(err){toast('当前反馈无法编辑');}});});
@@ -1163,25 +1216,34 @@
         const issue=data.issues.find(function(x){return x.id===id;});if(!issue)return;
         const card=qsa('#issueList .real-issue').find(function(x){return x.dataset.issue===id;}),panel=card&&card.querySelector('.issue-detail');if(!panel)return;
         if(!refresh&&!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
+        const oldText=panel.querySelector('.reply-text'),pendingText=oldText&&!oldText.disabled?oldText.value:'',oldImages=panel.querySelector('.reply-images'),pendingFiles=oldText&&!oldText.disabled&&oldImages?Array.from(oldImages.files):[];
         panel.classList.remove('hidden');panel.textContent='正在加载对话…';
         try{
-          const messages=await ShoeCloud.feedbackMessages(id),canReply=(isAdmin()||issue.ownerId===state.user.id)&&!issue.withdrawn;
+          const messages=await ShoeCloud.feedbackMessages(id),canReply=isLoggedIn()&&!issue.withdrawn;
           const ids=new Set(messages.map(function(m){return m.id;})),children=new Map();
           messages.forEach(function(m){const key=m.reply_to&&ids.has(m.reply_to)?m.reply_to:'';if(!children.has(key))children.set(key,[]);children.get(key).push(m);});
           const seen=new Set();
           function messageHtml(m,depth){
             if(seen.has(m.id))return '';seen.add(m.id);
             const parent=messages.find(function(x){return x.id===m.reply_to;});
-            return '<article class="feedback-message" data-message-id="'+escapeHtml(m.id)+'"><div class="message-meta"><strong>'+escapeHtml(m.author_name||m.author_id||'匿名用户')+'</strong><time>'+escapeHtml(String(m.created_at||'').replace('T',' ').slice(0,16))+'</time></div>'+(parent?'<div class="message-quote">回复 '+escapeHtml(parent.author_name||parent.author_id||'匿名用户')+'：'+escapeHtml((parent.content||'图片').slice(0,100))+'</div>':'')+(m.content?'<p class="message-content">'+escapeHtml(m.content)+'</p>':'')+'<div class="message-images">'+m.attachments.map(function(a){const url='/shoe-api/attachments/'+encodeURIComponent(a);return '<a href="'+url+'" target="_blank" rel="noopener"><img src="'+url+'" loading="lazy" alt="回复图片，点击查看原图"></a>';}).join('')+'</div>'+(canReply?'<button type="button" class="message-reply-link quote-reply" data-id="'+escapeHtml(m.id)+'">回复此条</button>':'')+'<div class="message-reply-slot"></div><div class="message-children" style="--reply-depth:'+Math.min(depth,3)+'">'+(children.get(m.id)||[]).map(function(child){return messageHtml(child,depth+1);}).join('')+'</div></article>';
+            const status=m.status||'active',active=status==='active',statusText=status==='withdrawn'?'此回复已撤回':status==='deleted'?'此回复已删除':'';
+            const controls=canReply&&m.is_owner&&status!=='deleted'?'<button type="button" class="message-reply-link edit-message" data-id="'+escapeHtml(m.id)+'">编辑</button><button type="button" class="message-reply-link '+(active?'withdraw-message':'restore-message')+'" data-id="'+escapeHtml(m.id)+'">'+(active?'撤回':'恢复回复')+'</button><button type="button" class="message-reply-link delete-message" data-id="'+escapeHtml(m.id)+'">删除</button>':'';
+            const parentText=parent&&parent.status&&parent.status!=='active'?(parent.status==='deleted'?'原回复已删除':'原回复已撤回'):parent?(parent.content||'图片').slice(0,100):'';
+            return '<article class="feedback-message" data-message-id="'+escapeHtml(m.id)+'"><div class="message-meta"><strong>'+escapeHtml(m.author_name||m.author_id||'匿名用户')+'</strong><time>'+escapeHtml(String(m.created_at||'').replace('T',' ').slice(0,16))+'</time>'+(m.edited_at?'<small class="muted">已编辑</small>':'')+'</div>'+(statusText?'<p class="muted">'+statusText+(status==='withdrawn'&&m.content?'（以下内容仅本人和管理员可见）':'')+'</p>':'')+(parent?'<div class="message-quote">回复 '+escapeHtml(parent.author_name||parent.author_id||'匿名用户')+'：'+escapeHtml(parentText)+'</div>':'')+(m.content?'<p class="message-content">'+escapeHtml(m.content)+'</p>':'')+'<div class="message-images">'+m.attachments.map(function(a){const url='/shoe-api/attachments/'+encodeURIComponent(a);return '<a href="'+url+'" target="_blank" rel="noopener"><img src="'+url+'" loading="lazy" alt="回复图片，点击查看原图"></a>';}).join('')+'</div>'+(canReply&&active?'<button type="button" class="message-reply-link quote-reply" data-id="'+escapeHtml(m.id)+'">回复此条</button>':'')+controls+'<div class="message-edit-slot"></div><p class="reply-error message-action-error" role="alert"></p><div class="message-reply-slot"></div><div class="message-children" style="--reply-depth:'+Math.min(depth,3)+'">'+(children.get(m.id)||[]).map(function(child){return messageHtml(child,depth+1);}).join('')+'</div></article>';
           }
           let thread=(children.get('')||[]).map(function(m){return messageHtml(m,0);}).join('');
           messages.forEach(function(m){if(!seen.has(m.id))thread+=messageHtml(m,0);});
           panel.innerHTML='<strong>反馈对话</strong><div class="feedback-thread">'+(thread||'<p class="muted">暂无回复，可以在下方补充。</p>')+'</div><div class="root-reply-slot"></div>';
+          const activeMessages=messages.filter(function(m){return !m.status||m.status==='active';});if(activeMessages.length){const latest=activeMessages[activeMessages.length-1],target=Array.from(panel.querySelectorAll('.feedback-message')).find(function(el){return el.dataset.messageId===latest.id;});if(target){const badge=document.createElement('span');badge.className='latest-reply-marker';badge.textContent='最新回复';target.querySelector('.message-meta').appendChild(badge);}}
           if(!canReply)return;
           const composer=document.createElement('div');composer.className='reply-composer';
           composer.innerHTML='<div class="reply-target-row"><small class="muted reply-target">补充这条反馈</small><button type="button" class="message-reply-link cancel-target hidden">取消指定回复</button></div><textarea class="textarea reply-text" placeholder="输入回复，也可以粘贴截图"></textarea><div class="reply-toolbar"><label class="reply-upload" tabindex="0"><span aria-hidden="true">＋</span> 添加图片<input class="sr-only reply-images" type="file" accept="image/png,image/jpeg" multiple></label><small class="muted">支持粘贴截图</small><span class="reply-preview muted" aria-live="polite"></span></div><div class="reply-send-row">'+(isAdmin()?'<label class="check"><input class="reply-notify" type="checkbox" checked> 发送后提醒提交者</label>':'')+'<button class="btn primary send-reply" type="button">发送回复</button></div><p class="reply-error" role="alert"></p>';
           const root=panel.querySelector('.root-reply-slot');root.appendChild(composer);let replyTo=null;
           const input=composer.querySelector('.reply-images'),textBox=composer.querySelector('.reply-text'),error=composer.querySelector('.reply-error'),send=composer.querySelector('.send-reply');
+          textBox.value=pendingText;if(pendingFiles.length){const dt=new DataTransfer();pendingFiles.forEach(function(file){dt.items.add(file);});input.files=dt.files;composer.querySelector('.reply-preview').textContent='已选 '+pendingFiles.length+' 张';}
+          panel.querySelectorAll('.edit-message').forEach(function(button){button.onclick=function(){const message=messages.find(function(m){return m.id===button.dataset.id;}),card=button.closest('.feedback-message'),slot=card.querySelector(':scope > .message-edit-slot');if(slot.childElementCount){slot.replaceChildren();return;}const field=document.createElement('textarea');field.className='textarea message-edit-text';field.value=message.content;field.setAttribute('aria-label','编辑回复内容');const save=document.createElement('button');save.type='button';save.className='btn primary';save.textContent='保存修改';const cancel=document.createElement('button');cancel.type='button';cancel.className='btn';cancel.textContent='取消';const actions=document.createElement('div');actions.className='dialog-actions';actions.append(save,cancel);slot.append(field,actions);field.focus();cancel.onclick=function(){slot.replaceChildren();};save.onclick=async function(){const error=card.querySelector(':scope > .message-action-error');if(!field.value.trim()){error.textContent='请填写回复内容';return;}save.disabled=true;try{await ShoeCloud.editReply(id,message.id,field.value);await openFeedbackDetails(id,true);await refreshNotices();}catch(err){error.textContent=err.message||'保存失败，请重试';save.disabled=false;}};};});
+          [['withdraw-message','withdrawReply'],['restore-message','restoreReply'],['delete-message','deleteReply']].forEach(function(pair){panel.querySelectorAll('.'+pair[0]).forEach(function(button){button.onclick=async function(){if(pair[0]==='delete-message'&&!button.dataset.confirmed){button.dataset.confirmed='1';button.textContent='确认删除此回复';const cancel=document.createElement('button');cancel.type='button';cancel.className='message-reply-link';cancel.textContent='取消';cancel.onclick=function(){delete button.dataset.confirmed;button.textContent='删除';cancel.remove();};button.after(cancel);return;}button.disabled=true;try{await ShoeCloud[pair[1]](id,button.dataset.id);await openFeedbackDetails(id,true);await refreshNotices();}catch(err){button.closest('.feedback-message').querySelector(':scope > .message-action-error').textContent=err.message||'操作失败，请重试';button.disabled=false;}};});});
+          const anonymousLabel=document.createElement('label');anonymousLabel.className='check';anonymousLabel.innerHTML='<input type="checkbox" class="reply-anonymous"> 匿名参与（管理员可查看身份）';const alreadyAnonymous=(issue.ownerId===state.user.id&&issue.owner.startsWith('匿名'))||messages.some(function(m){return m.is_owner&&m.anonymous_to_users;});anonymousLabel.querySelector('input').checked=alreadyAnonymous;anonymousLabel.querySelector('input').disabled=alreadyAnonymous;composer.querySelector('.reply-send-row').prepend(anonymousLabel);if(!isAdmin()){const hint=document.createElement('small');hint.className='muted';hint.textContent='发送后将通知管理员';composer.querySelector('.reply-send-row').prepend(hint);}
           composer.querySelector('.cancel-target').onclick=function(){replyTo=null;root.appendChild(composer);composer.querySelector('.reply-target').textContent='补充这条反馈';this.classList.add('hidden');textBox.focus();};
           panel.querySelectorAll('.quote-reply').forEach(function(button){button.onclick=function(){replyTo=button.dataset.id;const message=messages.find(function(m){return m.id===replyTo;});button.closest('.feedback-message').querySelector('.message-reply-slot').appendChild(composer);composer.querySelector('.reply-target').textContent='回复 '+(message.author_name||message.author_id||'匿名用户');composer.querySelector('.cancel-target').classList.remove('hidden');textBox.focus();};});
           function preview(){composer.querySelector('.reply-preview').textContent=input.files.length?'已选 '+input.files.length+' 张':'';}
@@ -1195,7 +1257,7 @@
             send.disabled=true;
             try{
               let messageId=composer.dataset.sentId;
-              if(!messageId){const sent=await ShoeCloud.reply(id,text||'图片补充',replyTo);messageId=sent.id;composer.dataset.sentId=messageId;textBox.disabled=true;composer.querySelector('.cancel-target').disabled=true;panel.querySelectorAll('.quote-reply').forEach(function(b){b.disabled=true;});}
+              if(!messageId){const sent=await ShoeCloud.reply(id,text||'图片补充',replyTo,composer.querySelector('.reply-anonymous').checked);messageId=sent.id;composer.dataset.sentId=messageId;textBox.disabled=true;composer.querySelector('.cancel-target').disabled=true;panel.querySelectorAll('.quote-reply').forEach(function(b){b.disabled=true;});}
               const failures=[];for(const file of files){try{await ShoeCloud.uploadFeedback(id,file,messageId);}catch(err){failures.push(file);}}
               if(failures.length){const dt=new DataTransfer();failures.forEach(function(f){dt.items.add(f);});input.files=dt.files;preview();error.textContent='文字已保存，'+failures.length+' 张图片上传失败；点击重试只补传失败图片。';send.textContent='重试上传';send.disabled=false;return;}
               const notify=composer.querySelector('.reply-notify');let notifyFailed=false;
@@ -1210,20 +1272,9 @@
         if($('statPending'))$('statPending').textContent=data.issues.filter(function(i){return !i.withdrawn&&i.status!=='resolved';}).length;
       }
       function renderIdentity(){
-        const testSwitch=state.testMode?'<div style="margin-top:14px"><strong>联调身份快速切换</strong><p class="muted" style="margin:3px 0 10px">仅本地原型显示，用于检查权限差异；正式版不提供。</p><div class="chip-row"><button class="btn quick-role" data-role="user">普通用户</button><button class="btn quick-role" data-role="admin">管理员</button></div></div>':'';
-        $('identitySummary').innerHTML='<div class="card" style="padding:16px;display:flex;align-items:center;gap:13px"><span class="avatar" style="width:46px;height:46px">'+$('avatarText').textContent+'</span><div><strong>'+escapeHtml(state.user.name)+'</strong><br><span class="muted">'+roleLabel(state.role)+' · '+(isLoggedIn()?'统一账号已登录':'未登录')+'</span></div></div>'+testSwitch;
-        qsa('.quick-role',$('identitySummary')).forEach(function(btn){btn.addEventListener('click',function(){setRole(btn.dataset.role);$('identityDialog').close();navigate('library');});});
+        $('identitySummary').innerHTML='<div class="card" style="padding:16px;display:flex;align-items:center;gap:13px"><span class="avatar" style="width:46px;height:46px">'+$('avatarText').textContent+'</span><div><strong>'+escapeHtml(state.user.name)+'</strong><br><span class="muted">'+roleLabel(state.role)+' · '+(isLoggedIn()?'统一账号已登录':'未登录')+'</span></div></div>';
       }
       function renderManagement(){renderUsers(true);renderResetRequests();renderAnnouncements();renderFeedbackTypes();renderDataVisual();}
-      function renderUsers(){
-        const query=($('userSearch').value||'').trim().toLowerCase();
-        const list=(data.users||[]).filter(function(u){return !query||[u.name,u.username,(u.categories||[]).join(' ')].join(' ').toLowerCase().includes(query);}).sort(function(a,b){return (a.status==='active'?0:1)-(b.status==='active'?0:1);});
-        $('userManageList').innerHTML=list.length?list.map(function(u){const cats=(u.categories||[]).join('、');return '<div class="manage-row"><div><strong>'+escapeHtml(u.name)+'</strong> <span class="badge">'+escapeHtml(roleLabel(u.role))+'</span><br><small>'+escapeHtml(u.username)+' · '+(cats?escapeHtml(cats)+' · ':'')+(u.status==='active'?'启用':'停用')+(u.lastSeen?' · 最近 '+escapeHtml(u.lastSeen):'')+'</small></div><div class="admin-mini-tools">'+(canResetUser(u)?'<button class="btn reset-user-password" data-id="'+u.id+'">生成新密码</button>':'')+'<button class="btn toggle-user" data-id="'+u.id+'">'+(u.status==='active'?'停用':'恢复')+'</button></div></div>';}).join(''):'<div class="empty">没有匹配的用户。</div>';
-        qsa('.reset-user-password').forEach(function(b){b.onclick=function(){const u=data.users.find(function(x){return x.id===b.dataset.id;});if(!u||!canResetUser(u)){toast('无权重置该账号');return;}const password=sixDigitPassword();u.password=password;u.lastSeen=null;data.passwordRequests=(data.passwordRequests||[]).map(function(r){return r.userId===u.id&&r.status==='pending'?Object.assign(r,{status:'completed',handledAt:new Date().toISOString()}):r;});localStorage.removeItem('shoePromptRememberedSession');saveData();renderUsers();renderResetRequests();openCredential(u,password,'已生成新的临时密码');};});
-        if(isSystemAdmin())qsa('#userManageList .manage-row').forEach(function(row,index){const u=list[index];if(!u)return;const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='编辑用户';b.onclick=function(){openUserEditor(u);};row.querySelector('.admin-mini-tools').prepend(b);});
-        qsa('#userManageList .manage-row').forEach(function(row,index){const u=list[index];if(!u)return;row.style.cursor='pointer';row.onclick=function(e){if(e.target.closest('button'))return;const count=(data.events||[]).filter(function(x){return x.userId===u.id&&x.type==='template_view';}).length;$('userDetailsContent').innerHTML='<p><strong>'+escapeHtml(u.name)+'</strong> · '+escapeHtml(roleLabel(u.role))+'</p><p>账号：'+escapeHtml(u.username)+'<br>人员分类：'+escapeHtml((u.categories||[]).join('、')||'未分类')+'<br>状态：'+(u.status==='active'?'启用':'停用')+'<br>最近登录：'+escapeHtml(u.lastSeen||'暂无')+'<br>本机记录的模板打开次数：'+count+'<br>在线状态：需接入服务后确认<br>密码：不显示，可由管理员重置</p>';const actions=$('userDetailsActions');actions.innerHTML='';qsa('button',row).forEach(function(source){const b=document.createElement('button');b.className=source.className;b.textContent=source.textContent;b.onclick=function(){$('userDetailsDialog').close();source.click();};actions.appendChild(b);});openDialog('userDetailsDialog');};});
-        qsa('.toggle-user').forEach(function(b){b.onclick=function(){const u=data.users.find(function(x){return x.id===b.dataset.id;});if(!u)return;u.status=u.status==='active'?'disabled':'active';saveData();renderUsers();};});
-      }
       let peopleCache=null,peopleCategory='',peopleRequest=0;
       const personnelTypes=['运营','美工','产品','AI','管理','其他'];
       const accountPrefixes={'运营':'op_','美工':'art_','产品':'prod_','AI':'ai_','管理':'mana_','其他':'user_'};
@@ -1234,7 +1285,7 @@
       function categoryValue(id){return $(id).value==='custom'?$(id+'Custom').value.trim():$(id).value;}
       function wireCategory(id,onchange){$(id).onchange=function(){$(id+'Custom').classList.toggle('hidden',this.value!=='custom');if(onchange)onchange();};if(onchange)$(id+'Custom').oninput=onchange;}
       function replaceAccountPrefix(value,category){const prefix=accountPrefixes[category]||'user_';return prefix+value.replace(/^(?:shoe_)?(?:op_|operator_|art_|prod_|product_|ai_|mana_|user_)?/,'').replace(/^shoe_/,'');}
-      renderUsers=async function(force){
+      async function renderUsers(force){
         const target=$('userManageList');
         try{
           if(!peopleCache||force===true){const request=++peopleRequest;if(!peopleCache)target.textContent='正在读取人员…';const loaded=await ShoeCloud.userActivity();if(request!==peopleRequest)return;peopleCache=loaded;}
@@ -1246,13 +1297,14 @@
           target.innerHTML=(matches.length?matches.map(function(p){const recent=p.active&&Date.now()-Date.parse(p.last_seen)<90000;return '<div class="manage-row" tabindex="0" role="button" data-person-id="'+escapeHtml(p.user_id)+'"><div><strong>'+escapeHtml(p.display_name||p.username)+'</strong> <span class="badge '+(recent?'green':'')+'">'+(!p.active?'已停用':recent?'近期在线':'离线')+'</span><br><small>'+escapeHtml(p.username)+' · '+escapeHtml(p.category||'未分类')+'</small><br><small>打开 '+Number(p.opens)+' 次 · 复制 '+Number(p.copies)+' 次 · 选择历史版本 '+Number(p.version_choices)+' 次</small></div><span class="muted" aria-hidden="true">›</span></div>';}).join(''):'<div class="empty">没有匹配的用户。</div>')+'<p class="muted">点击人员查看与编辑。在线状态根据最近 90 秒页面心跳判断。</p>';
           qsa('.manage-row',target).forEach(function(row,index){row.style.cursor='pointer';row.onclick=function(){openCloudPerson(matches[index]);};row.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();row.click();}};});
         }catch(err){target.textContent='人员信息读取失败，请稍后重试。';}
-      };
+      }
       function openCloudPerson(p){
         const local=p.source==='local'||String(p.user_id).startsWith('shoe-user-'),content=$('userDetailsContent'),actions=$('userDetailsActions');
         content.innerHTML='<div class="field"><label for="personName">姓名</label><input class="input" id="personName" value="'+escapeHtml(p.display_name||'')+'"></div><div class="form-two" style="margin-top:12px"><div class="field"><label for="personRole">权限</label><select class="select" id="personRole"><option value="user">普通用户</option>'+(!local?'<option value="management">管理者</option>':'')+'<option value="super_admin">超级管理员</option></select></div><div class="field"><label for="personCategory">人员分类</label>'+categorySelect('personCategory',p.category||'其他')+'</div></div><div class="field" style="margin-top:12px"><label for="personUsername">账号</label><input class="input" id="personUsername" value="'+escapeHtml(p.username||'')+'" autocomplete="off"><small class="muted">切换分类会建议对应前缀，您可以继续修改；保存后使用新账号登录。'+(!local?'账号和密码与 CPO 共用。':'')+'</small></div><p class="muted">打开 '+Number(p.opens)+' 次 · 复制 '+Number(p.copies)+' 次 · 手动选择版本 '+Number(p.version_choices)+' 次<br>最近活动：'+escapeHtml(String(p.last_seen||'暂无').replace('T',' ').slice(0,16))+'<br>账号状态：'+(p.active?'启用':'已停用')+'</p><p id="personError" class="reply-error" role="alert"></p>';
         $('personRole').value=p.role_code==='super_admin'?'super_admin':p.role_code==='management'?'management':'user';
         wireCategory('personCategory',function(){$('personUsername').value=replaceAccountPrefix($('personUsername').value,categoryValue('personCategory'));});
         actions.innerHTML='<button type="button" class="btn danger-btn" id="personDelete">删除</button><button type="button" class="btn" id="personReset">重置密码</button><button type="button" class="btn" id="personToggle">'+(p.active?'停用':'恢复')+'</button><button type="button" class="btn primary" id="personSave">保存修改</button>';
+        const credentialButton=document.createElement('button');credentialButton.type='button';credentialButton.className='btn';credentialButton.textContent='查看账号密码';credentialButton.onclick=async function(){credentialButton.disabled=true;try{const result=await ShoeCloud.accountCredential(p.user_id);openCredential({username:result.username,name:result.display_name},result.password,'账号密码 · 可复制交给本人');}catch(err){$('personError').textContent=err.message||'暂时无法查看密码';}finally{credentialButton.disabled=false;}};actions.prepend(credentialButton);
         function busy(value){qsa('button',actions).forEach(function(b){b.disabled=value;});}
         async function save(active){
           const name=$('personName').value.trim(),username=$('personUsername').value.trim().toLowerCase(),category=categoryValue('personCategory');
@@ -1287,18 +1339,17 @@
       }
       function viewAnnouncement(a){
         $('announcementViewContent').innerHTML='<h3>'+escapeHtml(a.title)+'</h3><p class="muted">'+escapeHtml(a.date||'')+(a.updatedAt?' · 已编辑 '+escapeHtml(a.updatedAt):'')+'</p><div style="white-space:pre-wrap">'+escapeHtml(a.body||'')+'</div>'+(a.images||[]).map(function(id){const url='/shoe-api/announcements/'+encodeURIComponent(a.id)+'/images/'+encodeURIComponent(id);return '<a href="'+url+'" target="_blank" rel="noopener"><img src="'+url+'" alt="公告图片，点击查看原图" loading="lazy" style="max-width:100%;max-height:280px;object-fit:contain;margin-top:12px"></a>';}).join('');
-        const related=a.audienceUserId&&(a.body||'').match(/反馈 ([0-9a-f-]{36})/i);
+        const related=a.feedbackId?[null,a.feedbackId]:a.audienceUserId&&(a.body||'').match(/反馈 ([0-9a-f-]{36})/i);
         if(related){const button=document.createElement('button');button.className='btn primary';button.style.marginTop='16px';button.textContent='查看相关反馈';button.onclick=async function(){button.disabled=true;try{
           const issues=await ShoeCloud.feedback();state.feedbackOffset=issues.length;state.feedbackHasMore=issues.length===50;if(!issues.some(function(i){return i.id===related[1];}))try{issues.push(await ShoeCloud.feedbackOne(related[1]));}catch(e){}data.issues=issues.map(function(i){return {id:i.id,type:i.category,area:i.announcement_title?'公告：'+i.announcement_title:i.template_id||'其他',text:i.content,status:i.status,owner:i.author_name||i.author_id||'匿名用户',ownerId:i.author_id,date:String(i.created_at||'').slice(0,10),withdrawn:i.status==='withdrawn',resolvedAt:i.resolved_at};});
-          closeDialogs();navigate('feedback');state.issueFilter='all';qsa('#boardTabs .board-tab').forEach(function(x){x.classList.toggle('active',x.dataset.status==='all');});renderIssues();await openFeedbackDetails(related[1],true);
-          const card=qsa('#issueList .real-issue').find(function(x){return x.dataset.issue===related[1];});if(card)card.scrollIntoView({behavior:'smooth',block:'start'});else toast('这条反馈已撤回或删除');
+          closeDialogs();navigate('feedback');const linkedIssue=data.issues.find(function(i){return i.id===related[1];});state.issueFilter=linkedIssue&&linkedIssue.withdrawn?'withdrawn':'all';qsa('#boardTabs .board-tab').forEach(function(x){x.classList.toggle('active',x.dataset.status===state.issueFilter);});renderIssues();await openFeedbackDetails(related[1],true);
+          const card=qsa('#issueList .real-issue').find(function(x){return x.dataset.issue===related[1];});if(card){qsa('.feedback-focus,.reply-focus').forEach(function(el){el.classList.remove('feedback-focus','reply-focus');});card.classList.add('feedback-focus');const replies=Array.from(card.querySelectorAll('.feedback-message')),target=replies.find(function(el){return el.dataset.messageId===a.messageId;})||replies[replies.length-1];if(target){target.classList.add('reply-focus');const marker=document.createElement('span');marker.className='latest-reply-marker';marker.textContent='本次通知对应回复';target.querySelector('.message-meta').appendChild(marker);target.scrollIntoView({behavior:'smooth',block:'center'});}else card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){card.classList.remove('feedback-focus');},10000);}else toast('这条反馈已撤回或删除');
         }catch(err){button.textContent='读取失败，点击重试';button.disabled=false;}};$('announcementViewContent').appendChild(button);}
         if(!a.audienceUserId&&a.active){const feedback=document.createElement('button');feedback.type='button';feedback.className='btn';feedback.style.margin='16px 0 0 10px';feedback.textContent='对此公告有疑问';feedback.onclick=function(){state.feedbackTemplateId=null;state.feedbackAnnouncement={id:a.id,title:a.title};closeDialogs();navigate('feedback');$('noticeFeedbackContext').classList.remove('hidden');$('noticeFeedbackContext').textContent='关联公告：《'+a.title+'》';const cancel=document.createElement('button');cancel.type='button';cancel.className='message-reply-link';cancel.style.marginLeft='10px';cancel.textContent='取消关联';cancel.onclick=function(){state.feedbackAnnouncement=null;$('noticeFeedbackContext').classList.add('hidden');};$('noticeFeedbackContext').appendChild(cancel);$('feedbackText').placeholder='请说明对公告哪部分有疑问，或附上截图。';$('feedbackText').focus();};$('announcementViewContent').appendChild(feedback);}
         openDialog('announcementViewDialog');
       }
-      function renderAnnouncements(){const list=(data.announcements||[]).filter(function(a){return !a.audienceUserId;});$('announcementManageList').innerHTML=list.length?list.map(function(a){return '<div class="manage-row"><div><strong>'+escapeHtml(a.title)+'</strong><br><small>'+escapeHtml(a.date)+' · '+(a.active?'发布中':'已撤回')+'</small></div><div class="admin-mini-tools"><button class="btn view-announcement" data-id="'+a.id+'">查看</button><button class="btn edit-announcement" data-id="'+a.id+'">编辑</button><button class="btn toggle-announcement" data-id="'+a.id+'">'+(a.active?'撤回':'重新发布')+'</button></div></div>';}).join(''):'<div class="empty">暂无公告</div>';qsa('.view-announcement').forEach(function(b){b.onclick=function(){const a=list.find(function(x){return x.id===b.dataset.id;});if(a)viewAnnouncement(a);};});qsa('.edit-announcement').forEach(function(b){b.onclick=function(){const a=list.find(function(x){return x.id===b.dataset.id;});if(!a)return;$('announcementForm').dataset.editId=a.id;$('announcementFormTitle').textContent='编辑公告';$('announcementTitle').value=a.title;$('announcementBody').value=a.body;openDialog('announcementDialog');};});qsa('.toggle-announcement').forEach(function(b){b.onclick=async function(){const a=list.find(function(x){return x.id===b.dataset.id;});try{await ShoeCloud.saveAnnouncement(a.id,{title:a.title,content:a.body,audience_user_id:a.audienceUserId||null,status:a.active?'withdrawn':'published'});a.active=!a.active;renderAnnouncements();updatePersonalSummaries();}catch(err){toast('公告状态未保存');}};});}
-      const renderAnnouncementsBase=renderAnnouncements;
-      renderAnnouncements=function(){renderAnnouncementsBase();qsa('#announcementManageList .manage-row').forEach(function(row,index){const a=(data.announcements||[]).filter(function(a){return !a.audienceUserId;})[index];if(!a)return;const version=String(a.updatedAt||a.date||'');const stats=Object.values(data.announcementUsers||{});const read=stats.filter(function(s){return s.read&&s.read[a.id]===version;}).length,opened=stats.filter(function(s){return s.opened&&s.opened[a.id]===version;}).length;const info=document.createElement('small');info.className='muted';info.style.display='block';info.textContent='正在读取已读情况…';ShoeCloud.announcementReadSummary(a.id).then(function(s){info.textContent='已读 '+s.read_count+' / '+s.audience+' 人 · 点击查看 '+s.opened+' 人 · 直接标为已读 '+s.marked_read+' 人';}).catch(function(){info.textContent='已读统计暂不可用';});row.firstElementChild.appendChild(info);row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('role','button');row.onkeydown=function(e){if(e.target===row&&e.key==='Enter')viewAnnouncement(a);};const viewButton=row.querySelector('.view-announcement');if(viewButton)viewButton.remove();row.onclick=function(e){if(e.target.closest('button'))return;viewAnnouncement(a);};if(!a.active){const b=document.createElement('button');b.className='btn danger-btn';b.type='button';b.textContent='删除';b.onclick=async function(){if(!isAdmin()||!confirm('确定永久删除这条已撤回公告？'))return;try{await ShoeCloud.deleteAnnouncement(a.id);data.announcements=data.announcements.filter(function(x){return x.id!==a.id;});renderAnnouncements();updatePersonalSummaries();}catch(err){toast('公告未删除，请重试');}};row.querySelector('.admin-mini-tools').appendChild(b);}});};
+      function renderAnnouncementRows(){const list=(data.announcements||[]).filter(function(a){return !a.audienceUserId;});$('announcementManageList').innerHTML=list.length?list.map(function(a){return '<div class="manage-row"><div><strong>'+escapeHtml(a.title)+'</strong><br><small>'+escapeHtml(a.date)+' · '+(a.active?'发布中':'已撤回')+'</small></div><div class="admin-mini-tools"><button class="btn edit-announcement" data-id="'+a.id+'">编辑</button><button class="btn toggle-announcement" data-id="'+a.id+'">'+(a.active?'撤回':'重新发布')+'</button></div></div>';}).join(''):'<div class="empty">暂无公告</div>';qsa('.edit-announcement').forEach(function(b){b.onclick=function(){const a=list.find(function(x){return x.id===b.dataset.id;});if(!a)return;$('announcementForm').dataset.editId=a.id;$('announcementFormTitle').textContent='编辑公告';$('announcementTitle').value=a.title;$('announcementBody').value=a.body;openDialog('announcementDialog');};});qsa('.toggle-announcement').forEach(function(b){b.onclick=async function(){const a=list.find(function(x){return x.id===b.dataset.id;});try{await ShoeCloud.saveAnnouncement(a.id,{title:a.title,content:a.body,audience_user_id:a.audienceUserId||null,status:a.active?'withdrawn':'published'});a.active=!a.active;renderAnnouncements();updatePersonalSummaries();}catch(err){toast('公告状态未保存');}};});}
+      function renderAnnouncements(){renderAnnouncementRows();qsa('#announcementManageList .manage-row').forEach(function(row,index){const a=(data.announcements||[]).filter(function(a){return !a.audienceUserId;})[index];if(!a)return;const info=document.createElement('small');info.className='muted';info.style.display='block';info.textContent='正在读取已读情况…';ShoeCloud.announcementReadSummary(a.id).then(function(s){info.textContent='已读 '+s.read_count+' / '+s.audience+' 人 · 点击查看 '+s.opened+' 人 · 直接标为已读 '+s.marked_read+' 人';}).catch(function(){info.textContent='已读统计暂不可用';});row.firstElementChild.appendChild(info);row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('role','button');row.onkeydown=function(e){if(e.target===row&&e.key==='Enter')viewAnnouncement(a);};row.onclick=function(e){if(e.target.closest('button'))return;viewAnnouncement(a);};if(!a.active){const b=document.createElement('button');b.className='btn danger-btn';b.type='button';b.textContent='删除';b.onclick=async function(){if(!isAdmin()||!confirm('确定永久删除这条已撤回公告？'))return;try{await ShoeCloud.deleteAnnouncement(a.id);data.announcements=data.announcements.filter(function(x){return x.id!==a.id;});renderAnnouncements();updatePersonalSummaries();}catch(err){toast('公告未删除，请重试');}};row.querySelector('.admin-mini-tools').appendChild(b);}});}
       function renderFeedbackTypes(){const list=(data.feedbackTypes||[]).filter(function(x){return x.active;});$('feedbackType').innerHTML=list.map(function(x){return '<option value="'+escapeHtml(x.name)+'" data-id="'+x.id+'">'+escapeHtml(x.name)+'</option>';}).join('')+'<option>其他</option>';$('feedbackTypeManageList').innerHTML=(data.feedbackTypes||[]).map(function(x){return '<div class="manage-row"><div><strong>'+escapeHtml(x.name)+'</strong><br><small>'+escapeHtml(x.example)+'</small></div><button class="btn toggle-feedback-type" data-id="'+x.id+'">'+(x.active?'停用':'启用')+'</button></div>';}).join('');updateFeedbackExample();qsa('.toggle-feedback-type').forEach(function(b){b.onclick=async function(){const items=clone(data.feedbackTypes),x=items.find(function(i){return i.id===b.dataset.id;});x.active=!x.active;try{await ShoeCloud.saveFeedbackTypes(items);data.feedbackTypes=items;renderFeedbackTypes();}catch(err){toast('反馈类别未保存');}};});}
       function updateFeedbackExample(){const x=(data.feedbackTypes||[]).find(function(i){return i.name===$('feedbackType').value;});$('feedbackTypeExample').textContent=x?x.example:'请说明发生了什么、期望如何调整；如有截图可以一并上传。';}
       let usageCache=null;
@@ -1362,6 +1413,12 @@
       function setComposerWidth(percent,persist){const layout=document.querySelector('.composer-layout');const width=layout.clientWidth,min=width>0?300/width*100:25,max=width>0?(width-338)/width*100:70;const value=Math.max(min,Math.min(max,percent));layout.style.setProperty('--composer-width',value+'%');$('composerResize').setAttribute('aria-valuenow',Math.round(value));if(persist)try{localStorage.setItem(composerWidthKey(),String(value));}catch(e){} }
       function installTextIndent(){document.addEventListener('keydown',function(e){const input=e.target;if(e.key!=='Tab'||e.ctrlKey||e.metaKey||e.altKey||!(input instanceof HTMLTextAreaElement)||input.readOnly||input.disabled)return;e.preventDefault();const start=input.selectionStart,end=input.selectionEnd,value=input.value,scroll=input.scrollTop;if(!e.shiftKey&&start===end){input.setRangeText('  ',start,end,'end');}else{const from=value.lastIndexOf('\n',start-1)+1,to=end>start&&value[end-1]==='\n'?end-1:end;const block=value.slice(from,to);const changed=block.split('\n').map(function(line){return e.shiftKey?line.replace(/^( {1,2}|\t)/,''):'  '+line;}).join('\n');input.setRangeText(changed,from,to,'select');}input.scrollTop=scroll;input.dispatchEvent(new Event('input',{bubbles:true}));});}
       function initEvents(){
+        $('restoreComposerDraftBtn').onclick=function(){if(state.activeTemplateData)renderDynamicComposer(state.activeTemplateData,true);};
+        $('restorePublishedDraftBtn').onclick=async function(){const button=this,t=findTemplate(state.editingTemplate);if(!t||!t.version)return;if(button.dataset.confirmId!==t.id){button.dataset.confirmId=t.id;button.textContent='确认放弃草稿并恢复已发布内容';return;}button.disabled=true;try{const versions=await ShoeCloud.templates(),published=versions.find(function(v){return v.id===t.id;});if(!published)throw new Error('已发布模板不存在');await ShoeCloud.discardDraft(t.id);clearEditorRecovery(t.id);const restored=Object.assign({},published.content,{id:t.id,title:published.title,type:published.media_type,pointId:published.selling_point_id||'general',version:published.version,versionName:published.version_name,revision:published.revision,status:'published',order:t.order,sourceKey:null});data.templates[data.templates.findIndex(function(v){return v.id===t.id;})]=restored;state.openingEditor=true;await openEditor(t.id);$('editorDraftState').textContent='已放弃草稿，恢复为当前已发布内容；没有发布新版本';}catch(err){$('editorDraftState').textContent=err.message||'恢复失败，请重试';}finally{button.disabled=false;delete button.dataset.confirmId;button.textContent='恢复已发布内容';}};
+        document.addEventListener('input',function(e){if(e.target.closest('#editorForm'))captureEditorRecovery();});
+        document.addEventListener('click',function(e){if(state.view==='editor'&&(e.target.closest('#editorForm')||e.target.closest('#fieldRuleDialog')))queueMicrotask(captureEditorRecovery);});
+        window.addEventListener('beforeunload',captureEditorRecovery);
+        installExpandablePanels();
         $('updateCurrentVersionBtn').onclick=async function(){const t=findTemplate(state.editingTemplate);if(!t||!t.version){toast('首次发布请使用“发布新版本”');return;}const button=$('updateCurrentVersionBtn');button.disabled=true;try{await saveEditor(true,true);}finally{button.disabled=false;}};
         $('clearTemplateUsage').onclick=async function(){const button=this,id=$('usageTemplate').value;if(!id)return;if(button.dataset.confirmTemplate!==id){button.dataset.confirmTemplate=id;button.textContent='确认清理此模板全部统计';$('usageClearStatus').textContent='将从看板移除该模板当前已有的全部统计（不限周期），不删除模板、反馈或收藏。再次点击确认；切换模板可取消。';return;}button.disabled=true;try{await ShoeCloud.resetUsage(id);delete button.dataset.confirmTemplate;button.textContent='清理此模板统计';await renderDataVisual();$('usageClearStatus').textContent='已有统计已移除，之后的新使用会重新累计。';}catch(err){$('usageClearStatus').textContent=err.message||'清理失败';}finally{button.disabled=false;}};
         $('usageTemplate').addEventListener('change',function(){delete $('clearTemplateUsage').dataset.confirmTemplate;$('clearTemplateUsage').textContent='清理此模板统计';$('usageClearStatus').textContent='';});
@@ -1371,13 +1428,11 @@
         composerGrip.addEventListener('keydown',function(e){if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const now=parseFloat(composerLayout.style.getPropertyValue('--composer-width'))||41;setComposerWidth(e.key==='Home'?25:e.key==='End'?75:now+(e.key==='ArrowRight'?3:-3),true);});
         composerGrip.addEventListener('dblclick',function(){composerLayout.style.removeProperty('--composer-width');try{localStorage.removeItem(composerWidthKey());}catch(e){}});
         const grip=$('feedbackResize');grip.addEventListener('pointerdown',function(e){e.preventDefault();const layout=document.querySelector('.feedback-layout'),form=$('feedbackForm'),start=e.clientX,width=form.getBoundingClientRect().width,max=Math.min(720,layout.clientWidth-290);grip.setPointerCapture(e.pointerId);function move(ev){layout.style.setProperty('--feedback-width',Math.max(320,Math.min(max,width+start-ev.clientX))+'px');}function done(){grip.removeEventListener('pointermove',move);grip.removeEventListener('pointerup',done);grip.removeEventListener('pointercancel',done);}grip.addEventListener('pointermove',move);grip.addEventListener('pointerup',done);grip.addEventListener('pointercancel',done);});
-        setInterval(function(){if(cloudReady&&!document.hidden)ShoeCloud.me().then(function(){if($('managementDialog').open&&$('manage-users').classList.contains('active'))renderUsers(true);}).catch(function(){});},30000);
+        setInterval(function(){if(cloudReady&&!document.hidden)ShoeCloud.me().then(async function(u){if(u.admin!==isAdmin()){closeDialogs();state.maintenance=false;await loadCloudData(u);showApp(u.admin?'admin':'user',{id:u.id,name:u.name||u.username});navigate('library');toast('账号权限已更新');}if($('managementDialog').open&&$('manage-users').classList.contains('active'))renderUsers(true);}).catch(function(err){if(err.status===401)toast('当前登录已失效，请重新登录以使用最新权限');});},30000);
         ['usagePerson','usageTemplate','chartMode'].forEach(function(id){$(id).addEventListener('change',renderUsageView);});$('usagePeriod').addEventListener('change',renderDataVisual);$('refreshUsage').onclick=renderDataVisual;$('usageWordSearch').addEventListener('input',renderUsageWords);
         setInterval(refreshNotices,15000);document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshNotices();});
         $('messageCenterBtn').onclick=async function(){await refreshNotices();const s=announcementState(),personal=visibleAnnouncements().some(function(a){return a.audienceUserId===currentUserKey()&&s.read[a.id]!==String(a.updatedAt||a.date||'');});switchInbox(personal);openDialog('announcementInbox');};
-        $('openChangePassword').classList.add('hidden');
         const activeTab=document.querySelector('[data-management="announcements"]');if(activeTab){qsa('.management-tab').forEach(function(el){el.classList.toggle('active',el===activeTab);});qsa('.management-panel').forEach(function(el){el.classList.toggle('active',el.id==='manage-announcements');});}
-        $('resetPointOrder').addEventListener('click',function(){if(data.pointOrders)delete data.pointOrders[currentUserKey()];saveData();renderPersonalPointOrder();renderLibrary();toast('已恢复默认卖点顺序');});
         const accountBox=document.createElement('details');accountBox.className='account-results';accountBox.hidden=true;accountBox.innerHTML='<summary id="accountResultsTitle">查看相近账号</summary><input class="input" id="accountResultsSearch" placeholder="搜索相近账号" aria-label="搜索相近账号"><div class="account-results-list" id="accountResultsList"></div>'; $('accountHint').insertAdjacentElement('afterend',accountBox);let similarAccounts=[];
         function showAccountMatches(){const q=$('accountResultsSearch').value.trim().toLowerCase(),items=similarAccounts.filter(function(s){return s.toLowerCase().includes(q);});$('accountResultsList').innerHTML=items.length?items.map(function(x){return '<div>'+escapeHtml(x)+'</div>';}).join(''):'<div class="muted">没有匹配的账号</div>';}
         $('accountResultsSearch').addEventListener('input',showAccountMatches);
@@ -1398,7 +1453,6 @@
         enableImagePaste('helpImageFiles','helpEditDialog',50);enableImagePaste('feedbackImages','feedbackForm',6);
         $('helpImageFiles').addEventListener('change',function(){const files=Array.from(this.files);$('helpUploadPreview').textContent=files.length?'已选择 '+files.length+' 张图片，保存后生效。':'';});
         $('passwordLoginForm').addEventListener('submit',async function(e){e.preventDefault();const a=$('loginAccount').value.trim(),p=$('loginPassword').value;try{await ShoeCloud.login(a,p,$('rememberLogin').checked);const u=await ShoeCloud.me();await loadCloudData(u);$('loginPassword').value='';showApp(u.admin?'admin':'user',{id:u.id,name:u.name||u.username});renderFeedbackTypes();renderIssues();updateStats();}catch(err){toast(err.status===401?'账号或密码不正确':err.status===429?'尝试次数过多，请 15 分钟后再试':'登录或加载数据失败，请稍后重试');}});
-        $('roleEditForm').addEventListener('submit',function(e){e.preventDefault();if(!isSystemAdmin())return;const u=data.users.find(function(x){return x.id===e.currentTarget.dataset.userId;});if(!u)return;const role=$('roleEditValue').value;if(u.id===state.user.id&&role!=='admin'){toast('不能在此降低当前超级管理员自己的权限');return;}u.role=role;saveData();$('roleEditDialog').close();renderUsers();toast('角色已修改（仅本地测试）');});
         $('showPassword').addEventListener('click',function(){$('loginPassword').type=$('loginPassword').type==='password'?'text':'password';});
         $('openResetRequest').addEventListener('click',function(){$('resetRequestLookup').value=$('loginAccount').value.trim();$('resetRequestError').textContent='';openDialog('resetRequestDialog');});
         $('resetRequestForm').addEventListener('submit',async function(e){
@@ -1408,8 +1462,43 @@
         });
         qsa('[data-view]').forEach(function(btn){btn.addEventListener('click',function(){navigate(btn.dataset.view);const d=btn.closest('dialog');if(d)d.close();});});
         $('mobileNavToggle').addEventListener('click',function(){$('topNav').classList.toggle('open');});
-        $('identityBtn').addEventListener('click',function(){renderIdentity();openDialog('identityDialog');});
-        $('logoutBtn').addEventListener('click',async function(){try{await ShoeCloud.logout();}catch(err){toast('退出失败，请检查网络');return;}cloudReady=false;closeDialogs();$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');state.role='guest';state.user={name:'游客',id:'guest'};state.testMode=false;});
+        $('identityBtn').addEventListener('click',async function(){renderIdentity();openDialog('identityDialog');try{await ShoeCloud.rememberCurrent();}catch(e){}await renderRememberedAccounts();});
+        function recentAccounts(){try{return JSON.parse(localStorage.getItem('shoeRecentAccounts')||'[]');}catch(e){return [];}}
+        async function finishAccountSwitch(){const user=await ShoeCloud.me();state.generatedCredentials={};state.lastCredential=null;$('credentialOutput').textContent='';state.maintenance=false;state.feedbackTarget=null;state.feedbackTemplateId=null;state.feedbackAnnouncement=null;$('feedbackForm').reset();$('noticeFeedbackContext').classList.add('hidden');await loadCloudData(user);closeDialogs();showApp(user.admin?'admin':'user',{id:user.id,name:user.name||user.username});navigate('library');renderFeedbackTypes();renderIssues();updateStats();toast('已切换到 '+(user.name||user.username));}
+        async function renderRememberedAccounts(){
+          try{
+            const accounts=await ShoeCloud.rememberedAccounts();if(!$('identityDialog').open)return;
+            const host=document.createElement('div');host.className='identity-account-list';host.id='identityAccountList';
+            const error=document.createElement('p');error.className='reply-error';error.setAttribute('role','alert');
+            function busy(on){host.querySelectorAll('button').forEach(function(b){b.disabled=on||b.dataset.current==='true';});}
+            accounts.forEach(function(a){
+              const row=document.createElement('div');row.className='identity-account-row'+(a.current?' is-current':'');
+              const select=document.createElement('button');select.type='button';select.className='identity-account-select';select.disabled=a.current;select.dataset.current=String(a.current);select.setAttribute('aria-label',a.display_name+' · '+a.username+(a.current?'（当前）':''));
+              select.innerHTML='<span class="avatar">'+escapeHtml((a.display_name||a.username).slice(0,1))+'</span><span class="identity-account-copy"><strong>'+escapeHtml(a.display_name)+'</strong><small>'+escapeHtml(a.username)+'</small></span>'+(a.current?'<span class="badge">当前</span>':'');
+              select.onclick=async function(){captureEditorRecovery();busy(true);error.textContent='';try{await ShoeCloud.switchRemembered(a.account_id);await finishAccountSwitch();}catch(err){error.textContent=(err.message||'切换失败')+'，可点击下方“切换账号”重新验证。';busy(false);}};
+              row.appendChild(select);
+              if(!a.current){
+                const remove=document.createElement('button');remove.type='button';remove.className='identity-account-remove';remove.textContent='删除';remove.tabIndex=-1;remove.setAttribute('aria-label','删除 '+a.display_name+' 的切换记录');remove.title='仅删除快捷切换记录，不删除员工账号';
+                const hint=document.createElement('span');hint.className='identity-account-hint';hint.textContent='⋯';row.appendChild(hint);
+                let startX=0,dragged=false;const reveal=function(on){row.classList.toggle('reveal-remove',on);remove.tabIndex=on?0:-1;};
+                row.title='将鼠标移到最右侧，或向左滑动，显示删除按钮';
+                select.addEventListener('pointerdown',function(e){startX=e.clientX;dragged=false;});
+                row.addEventListener('pointermove',function(e){if(e.pointerType==='mouse'&&!e.buttons){if(e.clientX>row.getBoundingClientRect().right-46)reveal(true);return;}if(e.buttons&&e.clientX-startX<-28){dragged=true;reveal(true);}if(e.buttons&&e.clientX-startX>28){dragged=true;reveal(false);}});
+                row.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')reveal(false);});
+                select.addEventListener('click',function(e){if(dragged){e.preventDefault();e.stopImmediatePropagation();dragged=false;}},true);
+                select.addEventListener('keydown',function(e){if(e.key==='ArrowLeft'||e.key==='Delete'){e.preventDefault();reveal(true);remove.focus();}if(e.key==='Escape'){reveal(false);}});
+                remove.onclick=async function(){busy(true);try{await ShoeCloud.removeRemembered(a.account_id);await renderRememberedAccounts();}catch(err){error.textContent='删除切换记录失败，请重试';busy(false);}};row.appendChild(remove);
+              }
+              host.appendChild(row);
+            });
+            const summary=$('identitySummary');summary.replaceChildren(host,error);
+            if(accounts.some(function(a){return !a.current;})){const clear=document.createElement('button');clear.type='button';clear.className='message-reply-link identity-account-clear';clear.textContent='仅保留当前账号';clear.onclick=async function(){busy(true);try{await ShoeCloud.clearRemembered();await renderRememberedAccounts();}catch(err){error.textContent='清理失败，请重试';busy(false);}};summary.appendChild(clear);}
+          }catch(err){const error=document.createElement('p');error.className='reply-error';error.textContent='暂时无法读取其他账号，可点击“切换账号”登录。';$('identitySummary').appendChild(error);}
+        }
+        $('switchAccountBtn').onclick=function(){captureEditorRecovery();$('identityDialog').close();$('switchUsername').value='';$('switchPassword').value='';$('switchAccountError').textContent='';$('recentAccountNames').replaceChildren();recentAccounts().forEach(function(name){const option=document.createElement('option');option.value=name;$('recentAccountNames').appendChild(option);});openDialog('switchAccountDialog');};
+        $('switchAccountDialog').addEventListener('close',function(){$('switchPassword').value='';});
+        $('switchAccountForm').onsubmit=async function(e){e.preventDefault();const button=this.querySelector('[type=submit]'),username=$('switchUsername').value.trim();button.disabled=true;$('switchAccountError').textContent='';try{await ShoeCloud.login(username,$('switchPassword').value,true);const user=await ShoeCloud.me();state.generatedCredentials={};state.lastCredential=null;$('credentialOutput').textContent='';state.maintenance=false;state.feedbackTarget=null;state.feedbackTemplateId=null;state.feedbackAnnouncement=null;await loadCloudData(user);localStorage.setItem('shoeRecentAccounts',JSON.stringify([username].concat(recentAccounts().filter(function(n){return n!==username;})).slice(0,8)));closeDialogs();showApp(user.admin?'admin':'user',{id:user.id,name:user.name||user.username});navigate('library');renderFeedbackTypes();renderIssues();updateStats();toast('已切换到 '+(user.name||user.username));}catch(err){$('switchAccountError').textContent=err.status===401?'账号或密码不正确，当前账号未退出':err.status===429?'尝试次数过多，请稍后再试':'切换未完成，请刷新确认当前身份或重试';}finally{$('switchPassword').value='';button.disabled=false;}};
+        $('logoutBtn').addEventListener('click',async function(){try{await ShoeCloud.logout();}catch(err){toast('退出失败，请检查网络');return;}state.generatedCredentials={};state.lastCredential=null;$('credentialOutput').textContent='';cloudReady=false;closeDialogs();$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');state.role='guest';state.user={name:'游客',id:'guest'};});
         qsa('[data-close-dialog]').forEach(function(btn){btn.addEventListener('click',function(){btn.closest('dialog').close();});});
         const defaultHelp='1. 从通用模板或卖点模板中选择一种表现形式。\n2. 选择常用项，或直接输入更具体的对象、场景与要求。\n3. 生成并复制完整提示词，发送给 DeepSeek、豆包、GPT 或其他具备相应能力的 AI。';
         $('libraryHelp').addEventListener('click',function(){$('helpContent').textContent=data.helpText||defaultHelp;$('helpImages').innerHTML=(data.helpImages||[]).map(function(src){return '<img alt="使用说明图片" style="display:block;max-width:100%;margin-top:12px;border-radius:10px" src="'+escapeHtml(src)+'">';}).join('');openDialog('helpDialog');});
@@ -1419,13 +1508,13 @@
         $('inboxPublic').addEventListener('click',function(){switchInbox(false);});$('inboxPersonal').addEventListener('click',function(){switchInbox(true);});
         $('announcementSummary').addEventListener('click',function(){switchInbox(false);openDialog('announcementInbox');});
         $('readAllAnnouncements').addEventListener('click',async function(){const s=announcementState(),list=visibleAnnouncements().filter(function(a){return state.personalInbox?!!a.audienceUserId:!a.audienceUserId;});try{await Promise.all(list.map(function(a){return ShoeCloud.readAnnouncement(a.id,'marked_read');}));list.forEach(function(a){s.read[a.id]=String(a.updatedAt||a.date||'');});saveData();renderInbox();updatePersonalSummaries();}catch(err){$('inboxMessage').textContent='部分已读状态未保存，请重试。';}});
+        $('selectAllInbox').onchange=function(){const checked=this.checked;qsa('#announcementInboxList .select-announcement').forEach(function(el){el.checked=checked;});updateInboxSelection();};
         $('hideSelectedAnnouncements').addEventListener('click',function(){const s=announcementState(),ids=qsa('.select-announcement:checked').map(function(x){return x.value;});if(!ids.length){$('inboxMessage').textContent='请先勾选需要移除的公告。';return;}s.hidden=Array.from(new Set(s.hidden.concat(ids)));saveData();$('inboxMessage').textContent='已从你的列表中移除。';renderInbox();updatePersonalSummaries();});
         $('composerBack').addEventListener('click',function(){if(state.previewingDraft&&state.editingTemplate){state.previewingDraft=false;navigate('editor');}else navigate('library');});
         $('returnToTemplate').addEventListener('click',function(){navigate('composer');$('returnToTemplate').classList.add('hidden');});
         qsa('.editor-step[data-editor-target]').forEach(function(b){b.addEventListener('click',function(){qsa('.editor-step').forEach(function(x){x.classList.toggle('active',x===b);});$(b.dataset.editorTarget).scrollIntoView({behavior:'smooth',block:'start'});});});
         $('resolveForm').addEventListener('submit',async function(e){e.preventDefault();if(!isAdmin())return;const i=data.issues.find(function(x){return x.id===e.currentTarget.dataset.issueId;});if(!i)return;try{await ShoeCloud.feedbackStatus(i.id,'resolved');i.status='resolved';i.resolvedAt=new Date().toISOString();$('resolveDialog').close();renderIssues();toast('已标记解决');}catch(err){$('resolveError').textContent='未能更新状态，请刷新后重试。';}});
         $('maintenanceToggle').addEventListener('click',function(){state.maintenance=!state.maintenance;$('maintenanceToggle').textContent=state.maintenance?'退出维护视角':'进入维护视角';renderLibrary();});
-        $('exitMaintenance').addEventListener('click',function(){state.maintenance=false;$('maintenanceToggle').textContent='进入维护视角';renderLibrary();});
         $('openManagementBtn').addEventListener('click',function(){renderManagement();openDialog('managementDialog');});
         $('templateSearch').addEventListener('input',function(){state.search=this.value;renderLibrary();});
         qsa('#libraryFilters .library-filter').forEach(function(btn){btn.addEventListener('click',function(){state.libraryFilter=btn.dataset.filter;qsa('#libraryFilters .library-filter').forEach(function(x){x.classList.toggle('active',x===btn);});renderLibrary();});});
@@ -1435,7 +1524,8 @@
         $('clearWorklist').addEventListener('click',function(){data.worklists[currentUserKey()]=[];saveData();renderWorklist();renderLibrary();toast('本次使用清单已清空');});
         $('composerForm').addEventListener('submit',function(e){e.preventDefault();generatePrompt();});
         $('copyPromptBottomBtn').addEventListener('click',function(){const text=$('promptOutput').textContent;if(!state.generatedValues){toast('请先填写并生成完整提示词');return;}copyText(text,'完整提示词已复制');});
-        $('feedbackThisTemplate').addEventListener('click',function(){state.feedbackTemplateId=state.activeTemplate;state.feedbackAnnouncement=null;$('noticeFeedbackContext').classList.add('hidden');navigate('feedback');$('returnToTemplate').classList.remove('hidden');const t=findTemplate(state.activeTemplate);if(t){$('feedbackArea').value=Array.from($('feedbackArea').options).some(function(o){return o.value===t.title;})?t.title:'其他';$('feedbackText').value='关于模板“'+t.title+'”的反馈：';$('feedbackText').focus();}});
+        $('feedbackThisTemplate').addEventListener('click',function(){const t=findTemplate(state.activeTemplate);if(t)startTargetFeedback(t,null,state.activeTemplateData||t);});
+        $('feedbackArea').addEventListener('change',function(){state.feedbackTarget=null;state.feedbackAnnouncement=null;state.feedbackTemplateId=findTemplate(this.value)?this.value:null;$('noticeFeedbackContext').classList.add('hidden');});
         $('composerHistoryBtn').addEventListener('click',function(){openHistory(state.activeTemplate);});
         $('editorHistoryBtn').addEventListener('click',function(){openHistory(state.editingTemplate);});
         $('closeHistory').addEventListener('click',function(){$('historyDrawer').classList.remove('open');});
@@ -1467,7 +1557,7 @@
           const text=$('feedbackText').value.trimEnd(),files=Array.from($('feedbackImages').files);
           if(!text.trim()){status.textContent='请填写问题或建议';status.className='reply-error';$('feedbackText').focus();return;}
           if(files.length>6||files.some(function(f){return !['image/png','image/jpeg'].includes(f.type)||f.size>10*1024*1024;})){status.textContent='最多选择 6 张 PNG 或 JPEG 图片，每张不超过 10 MB';status.className='reply-error';return;}
-          const notice=state.feedbackAnnouncement,payload={category:$('feedbackType').value||'其他',content:text,template_id:notice?null:state.feedbackTemplateId||null,announcement_id:notice?notice.id:null,anonymous_to_users:$('feedbackAnonymous').checked};
+          const notice=state.feedbackAnnouncement,area=$('feedbackArea').selectedOptions[0],target=notice?null:state.feedbackTarget||(area?'位置：'+area.textContent:null),payload={category:$('feedbackType').value||'其他',content:(target?'【'+target+'】\n':'')+text,template_id:notice?null:state.feedbackTemplateId||null,announcement_id:notice?notice.id:null,anonymous_to_users:$('feedbackAnonymous').checked};
           const signature=JSON.stringify(payload);
           if(!state.feedbackSubmission||state.feedbackSubmission.signature!==signature)state.feedbackSubmission={id:crypto.randomUUID(),signature:signature};
           payload.submission_id=state.feedbackSubmission.id;
@@ -1477,7 +1567,8 @@
           let failed=0;for(const file of files){try{await ShoeCloud.uploadFeedback(result.id,file);}catch(err){failed++;}}
           try{
             if(!data.issues.some(function(x){return x.id===result.id;})){data.issues.unshift({id:result.id,type:payload.category,area:notice?'公告：'+notice.title:$('feedbackArea').value,text:text,status:'pending',owner:state.user.name,ownerId:state.user.id,date:new Date().toISOString().slice(0,10),withdrawn:false,imageCount:files.length-failed});state.feedbackOffset=(state.feedbackOffset||0)+1;}
-            form.reset();state.feedbackSubmission=null;state.feedbackAnnouncement=null;state.feedbackTemplateId=null;$('noticeFeedbackContext').classList.add('hidden');$('uploadPreview').innerHTML='';state.uploadUrls.forEach(URL.revokeObjectURL);state.uploadUrls=[];state.issueFilter='all';qsa('#boardTabs .board-tab').forEach(function(x){x.classList.toggle('active',x.dataset.status==='all');});renderFeedbackTypes();renderIssues();await openFeedbackDetails(result.id,true);
+            const savedFeedback=await ShoeCloud.feedbackOne(result.id),savedIssue=data.issues.find(function(x){return x.id===result.id;});if(savedIssue){savedIssue.owner=savedFeedback.author_name;savedIssue.ownerId=savedFeedback.author_id;}
+            form.reset();state.feedbackTarget=null;state.feedbackSubmission=null;state.feedbackAnnouncement=null;state.feedbackTemplateId=null;$('noticeFeedbackContext').classList.add('hidden');$('uploadPreview').innerHTML='';state.uploadUrls.forEach(URL.revokeObjectURL);state.uploadUrls=[];state.issueFilter='all';qsa('#boardTabs .board-tab').forEach(function(x){x.classList.toggle('active',x.dataset.status==='all');});renderFeedbackTypes();renderIssues();await openFeedbackDetails(result.id,true);
             status.textContent=failed?'反馈文字已保存；'+failed+' 张图片上传失败，请在左侧该反馈中补充图片。':'反馈已保存，可在左侧该条反馈中继续回复。';
             toast(failed?'反馈已保存，部分图片需补充':'反馈已提交');
           }catch(err){status.textContent='反馈已保存成功，编号：'+result.id+'。页面显示未完成，请刷新查看，不必再次提交。';}
@@ -1497,8 +1588,6 @@
           try{const created=await ShoeCloud.createAccount({username:username,display_name:$('newUserName').value.trim(),category:category,role:role,active:true});$('userEditDialog').close();form.reset();$('userSearch').value='';peopleCategory='';await renderUsers(true);openCredential({username:created.username,name:created.display_name},created.initial_password,'账号已创建，请复制初始密码交给本人');}
           catch(err){$('accountHint').textContent=err.status===409?'账号已存在，请修改。':'创建失败，请稍后重试。';}finally{button.disabled=false;}
         });
-        $('openChangePassword').addEventListener('click',function(){if(!isLoggedIn()){toast('请先登录');return;}openDialog('changePasswordDialog');});
-        $('changePasswordForm').addEventListener('submit',function(e){e.preventDefault();const u=(data.users||[]).find(function(x){return x.id===state.user.id;});const current=$('currentPassword').value,next=$('nextPassword').value,confirmNext=$('confirmPassword').value;if(!u||u.password!==current){toast('当前密码不正确');return;}if(!/^\d{6}$/.test(next)){toast('新密码请使用六位数字');return;}if(next!==confirmNext){toast('两次输入的新密码不一致');return;}u.password=next;saveData();e.currentTarget.reset();$('changePasswordDialog').close();toast('密码已修改');});
         $('copyCredentialBtn').addEventListener('click',function(){if(!state.lastCredential)return;const text='账号：'+state.lastCredential.username+'\n密码：'+state.lastCredential.password;const done=function(){toast('账号和新密码已复制');};navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text).then(done).catch(function(){fallbackCopy(text);done();}):(fallbackCopy(text),done());});
         $('addAnnouncementBtn').addEventListener('click',function(){$('announcementForm').reset();$('announcementUploadPreview').textContent='';delete $('announcementForm').dataset.editId;$('announcementFormTitle').textContent='发布公告';openDialog('announcementDialog');});
         enableImagePaste('announcementImages','announcementDialog',50);

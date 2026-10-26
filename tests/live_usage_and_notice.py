@@ -51,6 +51,7 @@ async def main():
             assert (await person.patch('/admin/templates/'+tid+'/versions/2',json={'name':'v1'})).status_code==403
             await ok(await admin.patch('/admin/templates/'+tid+'/versions/2',json={'name':'v1'}))
             assert (await ok(await admin.get('/templates/'+tid+'/versions')))[0]['version_name']=='v1'
+            await ok(await admin.put('/admin/templates/'+tid+'/draft',json={'title':'临时统计验收模板','media_type':'image','content':content}))
             published=await ok(await admin.post('/admin/templates/'+tid+'/publish'))
             assert published['version']==3 and published['version_name']=='v2'
             assert (await admin.patch('/admin/templates/'+tid+'/versions/3',json={'name':'v1'})).status_code==409
@@ -60,6 +61,16 @@ async def main():
             assert updated['version']==3 and updated['version_name']=='v2' and updated['revision']==2
             assert len(await ok(await admin.get('/templates/'+tid+'/versions')))==2
             assert await db.fetchval('SELECT count(*) FROM shoe_workbench.version_revisions WHERE template_id=$1',tid)==1
+            assert (await ok(await admin.get('/admin/templates/'+tid+'/draft')))['draft'] is None
+            partial={'body':'','bracketFields':[{'index':9,'mode':'replace'}]}
+            await ok(await admin.put('/admin/templates/'+tid+'/draft',json={'title':'临时统计验收模板','media_type':'image','content':partial}))
+            assert (await ok(await admin.get('/admin/templates/'+tid+'/draft')))['draft']['content']['body']==''
+            assert (await admin.post('/admin/templates/'+tid+'/publish')).status_code==422
+            assert (await person.delete('/admin/templates/'+tid+'/draft')).status_code==403
+            await ok(await admin.delete('/admin/templates/'+tid+'/draft'))
+            assert (await ok(await admin.get('/admin/templates/'+tid+'/draft')))['draft'] is None
+            assert len(await ok(await admin.get('/templates/'+tid+'/versions')))==2
+            print('PASS: incomplete cloud drafts retained without publishing; publish clears draft; discard does not create a version')
             assert (await person.post('/admin/templates/'+tid+'/usage/reset')).status_code==403
             await ok(await admin.post('/admin/templates/'+tid+'/usage/reset?version=2'))
             dashboard=await ok(await admin.get('/admin/usage-dashboard'))

@@ -22,6 +22,8 @@ from pydantic import BaseModel, Field
 from identity import CpoIdentityProvider, Principal
 from policy import WorkbenchUser, can_transition_feedback
 import shared_accounts
+import credential_vault
+import collaboration
 
 
 @asynccontextmanager
@@ -33,6 +35,7 @@ async def lifespan(app: FastAPI):
     app.state.db = await asyncpg.create_pool(dsn, min_size=1, max_size=5)
     identity_dsn = os.environ.get('SHOE_IDENTITY_DATABASE_URL')
     app.state.accounts = await asyncpg.create_pool(identity_dsn, min_size=1, max_size=3) if identity_dsn else None
+    await credential_vault.initialize(app.state.db)
     app.state.identity_client = httpx.AsyncClient(base_url='http://127.0.0.1:8000', timeout=5)
     app.state.identity = CpoIdentityProvider(app.state.identity_client)
     try:
@@ -69,7 +72,12 @@ async def current_user(request: Request, authorization: str = Header(default='')
         raise HTTPException(401, 'invalid session')
     # Until an independent role mapping is implemented, only the existing super
     # administrator is allowed to administer this separate application.
-    return WorkbenchUser(principal.user_id, principal.role == 'super_admin'), principal
+    if app.state.accounts and not principal.user_id.startswith('shoe-user-'):
+        async with app.state.accounts.acquire() as conn:
+            actual=await conn.fetchrow('SELECT role_code,status FROM iam.users WHERE user_id=$1',int(principal.user_id))
+        if not actual or actual['status']!='active': raise HTTPException(401,'account disabled')
+        principal=Principal(principal.user_id,principal.username,principal.display_name,actual['role_code'])
+    return WorkbenchUser(principal.user_id, principal.role in ('super_admin','management')), principal
 
 
 class FeedbackCreate(BaseModel):
@@ -147,6 +155,7 @@ class VersionName(BaseModel):
 class FeedbackMessage(BaseModel):
     content: str = Field(min_length=1, max_length=5000)
     reply_to: str | None = Field(default=None, max_length=100)
+    anonymous_to_users: bool = False
 
 
 class FeedbackEdit(BaseModel):
@@ -207,6 +216,13 @@ def validate_template_content(content, publish=False):
     """Validate explicit bracket rules without guessing their meaning."""
     if not isinstance(content, dict):
         raise HTTPException(422, 'template content must be an object')
+    body=content.get('body','')
+    if not isinstance(body,str):
+        raise HTTPException(422,'template body must be text')
+    if publish and not body.strip():
+        raise HTTPException(422,'发布前请填写提示词正文')
+    if not publish:
+        return
     rules = content.get('bracketFields')
     if rules is None:
         return
@@ -247,7 +263,7 @@ async def require_same_origin(request: Request, call_next):
 
 
 @app.post('/auth/login')
-async def login(payload: LoginInput):
+async def login(payload: LoginInput, request: Request):
     async with app.state.db.acquire() as conn:
         is_local = await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.local_accounts WHERE lower(username)=lower($1))',payload.username.strip())
     if is_local:
@@ -282,6 +298,8 @@ async def login(payload: LoginInput):
     response.set_cookie('shoe_session', result['accessToken'], httponly=True, secure=True,
                         samesite='strict', path='/', max_age=7 * 24 * 3600 if payload.remember else None)
     response.headers['Cache-Control'] = 'no-store'
+    if payload.remember:
+        await remember_account(request,response,result['accessToken'])
     return response
 
 
@@ -299,6 +317,69 @@ async def logout(request: Request, user=Depends(current_user)):
     response = JSONResponse({'ok': True})
     response.delete_cookie('shoe_session', path='/', secure=True, httponly=True, samesite='strict')
     return response
+
+
+def device_hash(request):
+    value=request.cookies.get('shoe_device','')
+    return hashlib.sha256(value.encode()).hexdigest() if value else None
+
+
+async def remember_account(request,response,new_token):
+    device=request.cookies.get('shoe_device') or secrets.token_urlsafe(32)
+    digest=hashlib.sha256(device.encode()).hexdigest()
+    for token in [request.cookies.get('shoe_session',''),new_token]:
+        if not token: continue
+        try: _,person=await current_user(request,'Bearer '+token)
+        except HTTPException: continue
+        async with app.state.db.acquire() as conn:
+            await conn.execute('''INSERT INTO shoe_workbench.remembered_accounts(device_hash,account_id,username,display_name,token_ciphertext)
+              VALUES($1,$2,$3,$4,$5) ON CONFLICT(device_hash,account_id) DO UPDATE SET username=$3,display_name=$4,
+              token_ciphertext=$5,expires_at=now()+interval '30 days',updated_at=now()''',digest,person.user_id,person.username,person.display_name,credential_vault.cipher().encrypt(token.encode()).decode())
+            await conn.execute("DELETE FROM shoe_workbench.remembered_accounts WHERE expires_at<now()")
+    response.set_cookie('shoe_device',device,httponly=True,secure=True,samesite='strict',path='/',max_age=30*86400)
+
+
+@app.get('/auth/accounts')
+async def remembered_accounts(request: Request,user=Depends(current_user)):
+    async with app.state.db.acquire() as conn:
+        rows=await conn.fetch('''SELECT account_id,username,display_name FROM shoe_workbench.remembered_accounts
+          WHERE device_hash=$1 AND expires_at>now() ORDER BY updated_at DESC LIMIT 20''',device_hash(request))
+    return JSONResponse([dict(r,current=r['account_id']==user[0].user_id) for r in rows],headers={'Cache-Control':'no-store'})
+
+
+@app.post('/auth/accounts')
+async def remember_current(request: Request,user=Depends(current_user)):
+    response=JSONResponse({'ok':True})
+    await remember_account(request,response,request.cookies.get('shoe_session',''))
+    return response
+
+
+@app.post('/auth/accounts/{account_id}/switch')
+async def switch_remembered(account_id: str,request: Request,user=Depends(current_user)):
+    async with app.state.db.acquire() as conn:
+        row=await conn.fetchrow('SELECT token_ciphertext FROM shoe_workbench.remembered_accounts WHERE device_hash=$1 AND account_id=$2 AND expires_at>now()',device_hash(request),account_id)
+    if not row: raise HTTPException(404,'账号记录不存在，请重新登录')
+    token=credential_vault.cipher().decrypt(row['token_ciphertext'].encode()).decode()
+    try: await current_user(request,'Bearer '+token)
+    except HTTPException: raise HTTPException(401,'该账号登录已失效，请重新输入密码')
+    response=JSONResponse({'ok':True},headers={'Cache-Control':'no-store'})
+    response.set_cookie('shoe_session',token,httponly=True,secure=True,samesite='strict',path='/',max_age=7*86400)
+    return response
+
+
+@app.delete('/auth/accounts/{account_id}')
+async def remove_remembered(account_id: str,request: Request,user=Depends(current_user)):
+    if account_id==user[0].user_id: raise HTTPException(409,'不能移除当前使用的账号')
+    async with app.state.db.acquire() as conn:
+        await conn.execute('DELETE FROM shoe_workbench.remembered_accounts WHERE device_hash=$1 AND account_id=$2',device_hash(request),account_id)
+    return {'removed':True}
+
+
+@app.delete('/auth/accounts')
+async def clear_remembered(request: Request,user=Depends(current_user)):
+    async with app.state.db.acquire() as conn:
+        await conn.execute('DELETE FROM shoe_workbench.remembered_accounts WHERE device_hash=$1 AND account_id<>$2',device_hash(request),user[0].user_id)
+    return {'removed':True}
 
 
 @app.post('/auth/reset-requests',status_code=202)
@@ -338,7 +419,7 @@ async def complete_password_requests(username,name):
 @app.post('/admin/local-accounts', status_code=201)
 async def create_local_account(payload: LocalAccountInput, user=Depends(current_user)):
     require_admin(user)
-    if payload.role not in ('operator', 'super_admin'):
+    if payload.role not in ('operator', 'management', 'super_admin'):
         raise HTTPException(422, 'invalid role')
     username = payload.username.strip().lower()
     password = str(secrets.randbelow(90000000)+10000000)
@@ -350,6 +431,7 @@ async def create_local_account(payload: LocalAccountInput, user=Depends(current_
               VALUES($1,$2,$3,$4,$5,$6)''',account_id,username,payload.display_name.strip(),payload.role,payload.category.strip(),encoded)
         except asyncpg.UniqueViolationError:
             raise HTTPException(409, 'username already exists')
+    await credential_vault.store(app.state.db,app.state.accounts,account_id,password)
     response = JSONResponse({'id':account_id,'username':username,'display_name':payload.display_name,'initial_password':password},status_code=201)
     response.headers['Cache-Control'] = 'no-store'
     return response
@@ -368,6 +450,7 @@ async def reset_local_password(account_id: str, user=Depends(current_user)):
                 raise HTTPException(404, 'local account not found')
             await conn.execute('DELETE FROM shoe_workbench.local_sessions WHERE user_id=$1', account_id)
             await conn.execute('DELETE FROM shoe_workbench.login_attempts WHERE key=$1', row['username'])
+    await credential_vault.store(app.state.db,app.state.accounts,account_id,password)
     response = JSONResponse({'username':row['username'],'display_name':row['display_name'],'initial_password':password})
     await complete_password_requests(row['username'],row['display_name'])
     response.headers['Cache-Control'] = 'no-store'
@@ -377,9 +460,9 @@ async def reset_local_password(account_id: str, user=Depends(current_user)):
 @app.patch('/admin/local-accounts/{account_id}')
 async def update_local_account(account_id: str, payload: LocalAccountUpdate, user=Depends(current_user)):
     require_admin(user)
-    if payload.role not in ('operator', 'super_admin'):
+    if payload.role not in ('operator', 'management', 'super_admin'):
         raise HTTPException(422, 'invalid role')
-    if account_id == user[0].user_id and (not payload.active or payload.role != 'super_admin'):
+    if account_id == user[0].user_id and (not payload.active or payload.role not in ('super_admin','management')):
         raise HTTPException(409, 'cannot disable or demote current account')
     name = payload.display_name.strip()
     if not name:
@@ -459,6 +542,7 @@ async def create_shared_account(payload: AccountInput,user=Depends(current_user)
     password = f'{secrets.randbelow(1000000):06d}'
     row = await shared_accounts.save(app.state.accounts,None,payload.username,payload.display_name.strip(),payload.role,True,password)
     await account_metadata(row,payload.category,user[0].user_id,'create')
+    await credential_vault.store(app.state.db,app.state.accounts,row['user_id'],password)
     response=JSONResponse(dict(row,initial_password=password),status_code=201)
     response.headers['Cache-Control']='no-store'
     return response
@@ -467,7 +551,7 @@ async def create_shared_account(payload: AccountInput,user=Depends(current_user)
 @app.patch('/admin/accounts/{account_id}')
 async def update_shared_account(account_id: int,payload: AccountInput,user=Depends(current_user)):
     require_admin(user)
-    if str(account_id)==user[0].user_id and (not payload.active or payload.role!='super_admin'):
+    if str(account_id)==user[0].user_id and (not payload.active or payload.role not in ('super_admin','management')):
         raise HTTPException(409,'cannot disable or demote current account')
     if not payload.display_name.strip():
         raise HTTPException(422,'name required')
@@ -483,12 +567,24 @@ async def update_shared_account(account_id: int,payload: AccountInput,user=Depen
 async def reset_shared_account(account_id: int,user=Depends(current_user)):
     require_admin(user)
     result = await shared_accounts.reset(app.state.accounts,account_id)
+    await credential_vault.store(app.state.db,app.state.accounts,account_id,result['initial_password'])
     await complete_password_requests(result['username'],result['display_name'])
     async with app.state.db.acquire() as conn:
         await conn.execute('INSERT INTO shoe_workbench.account_audit(actor_id,target_id,action) VALUES($1,$2,$3)',user[0].user_id,str(account_id),'reset_password')
     response=JSONResponse(result)
     response.headers['Cache-Control']='no-store'
     return response
+
+
+@app.get('/admin/account-credentials/{account_id}')
+async def reveal_account_credential(account_id: str,user=Depends(current_user)):
+    require_admin(user)
+    result=await credential_vault.reveal(app.state.db,app.state.accounts,account_id)
+    if not result:
+        raise HTTPException(409,'当前密码尚未核对保存，或已从其他系统修改。请重置后查看。')
+    async with app.state.db.acquire() as conn:
+        await conn.execute('INSERT INTO shoe_workbench.account_audit(actor_id,target_id,action) VALUES($1,$2,$3)',user[0].user_id,account_id,'view_credential')
+    return JSONResponse(result,headers={'Cache-Control':'no-store'})
 
 
 @app.delete('/admin/accounts/{account_id}')
@@ -947,6 +1043,16 @@ async def admin_templates(user=Depends(current_user)):
     return result
 
 
+@app.delete('/admin/templates/{template_id}/draft')
+async def discard_template_draft(template_id: str,user=Depends(current_user)):
+    require_admin(user)
+    async with app.state.db.acquire() as conn:
+        result=await conn.fetchval('UPDATE shoe_workbench.templates SET draft=NULL,updated_at=now() WHERE id=$1 AND archived_at IS NULL RETURNING id',template_id)
+    if result is None:
+        raise HTTPException(404,'template not found')
+    return {'discarded':True}
+
+
 @app.post('/admin/templates/{template_id}/archive')
 async def archive_template(template_id: str, user=Depends(current_user)):
     require_admin(user)
@@ -1003,7 +1109,7 @@ async def publish_template(template_id: str, update_current: bool=False,user=Dep
                 await conn.execute('''INSERT INTO shoe_workbench.template_versions
                     (template_id,version,content,published_by,display_name) VALUES($1,$2,$3::jsonb,$4,$5)''',
                     template_id, version, json.dumps(draft['content'], ensure_ascii=False), user[0].user_id,next_name)
-            await conn.execute('''UPDATE shoe_workbench.templates SET published_version=$2,
+            await conn.execute('''UPDATE shoe_workbench.templates SET published_version=$2,draft=NULL,
                 title=$3,media_type=$4,selling_point_id=$5,updated_at=now() WHERE id=$1''',
                 template_id, version, draft['title'], draft['media_type'], draft.get('selling_point_id'))
             meta=await conn.fetchrow("SELECT COALESCE(display_name,'v'||version::text) AS version_name,revision FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=$2",template_id,version)
@@ -1030,6 +1136,7 @@ async def create_feedback(payload: FeedbackCreate, user=Depends(current_user)):
           (id, author_id, template_id, category, content, anonymous_to_users,announcement_id)
           VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(id) DO NOTHING''', ident, actor.user_id, payload.template_id,
           payload.category, payload.content, payload.anonymous_to_users,payload.announcement_id)
+        await collaboration.notify_admins(conn,app.state.accounts,ident,actor,'收到新的需求反馈')
     return {'id': ident, 'status': 'pending'}
 
 
@@ -1050,9 +1157,8 @@ async def list_feedback(offset: int=0,user=Depends(current_user)):
     for row in rows:
         item = dict(row)
         # Even stable author IDs are identifying information for anonymous feedback.
-        if row['anonymous_to_users'] and not actor.is_admin and actor.user_id != row['author_id']:
-            item['author_id'] = None
-            item['author_name'] = '匿名用户'
+        async with app.state.db.acquire() as conn:
+            item=await collaboration.decorate(conn,item,actor,item['id'],row['anonymous_to_users'])
         result.append(item)
     return result
 
@@ -1079,8 +1185,8 @@ async def get_feedback(feedback_id: str,user=Depends(current_user)):
     if not row:
         raise HTTPException(404,'feedback not found')
     item=dict(row)
-    if item['anonymous_to_users'] and not actor.is_admin and actor.user_id!=item['author_id']:
-        item['author_id']=None;item['author_name']='匿名用户'
+    async with app.state.db.acquire() as conn:
+        item=await collaboration.decorate(conn,item,actor,feedback_id,item['anonymous_to_users'])
     return item
 
 
@@ -1092,6 +1198,8 @@ async def delete_feedback(feedback_id: str, user=Depends(current_user)):
             feedback_id,user[0].user_id)
     if result is None:
         raise HTTPException(403, 'feedback cannot be deleted')
+    async with app.state.db.acquire() as conn:
+        await conn.execute('UPDATE shoe_workbench.announcements SET deleted_at=now() WHERE feedback_id=$1 AND deleted_at IS NULL',feedback_id)
     return {'deleted': True}
 
 
@@ -1102,21 +1210,72 @@ async def feedback_messages(feedback_id: str, user=Depends(current_user)):
         item = await conn.fetchrow('SELECT author_id,status,anonymous_to_users FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL', feedback_id)
         if item is None or (item['status'] == 'withdrawn' and not actor.is_admin and item['author_id'] != actor.user_id):
             raise HTTPException(404, 'feedback not found')
-        rows = await conn.fetch('''SELECT m.id,m.author_id,m.content,m.created_at,m.reply_to,
-            max(p.display_name) AS author_name,
+        rows = await conn.fetch('''SELECT m.id,m.author_id,m.content,m.created_at,m.reply_to,m.status,m.updated_at,m.edited_at,
+            max(p.display_name) AS author_name,m.anonymous_to_users,
             COALESCE(json_agg(a.id) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS attachments
             FROM shoe_workbench.feedback_messages m LEFT JOIN shoe_workbench.attachments a ON a.feedback_message_id=m.id
             LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=m.author_id
             WHERE m.feedback_id=$1 GROUP BY m.id ORDER BY m.created_at,m.id''', feedback_id)
     result = []
-    for row in rows:
-        entry = dict(row)
-        entry['attachments'] = json_value(entry['attachments'])
-        if item['anonymous_to_users'] and not actor.is_admin and actor.user_id != item['author_id'] and entry['author_id'] == item['author_id']:
-            entry['author_id'] = None
-            entry['author_name'] = '匿名用户'
-        result.append(entry)
+    async with app.state.db.acquire() as conn:
+        aliases=await collaboration.anonymous_map(conn,feedback_id)
+        profiles={}
+        for row in rows:
+            entry = dict(row)
+            entry['attachments'] = json_value(entry['attachments'])
+            entry=await collaboration.decorate(conn,entry,actor,feedback_id,entry['anonymous_to_users'] or entry['author_id'] in aliases,aliases=aliases,profiles=profiles)
+            if entry['status']=='deleted' or (entry['status']=='withdrawn' and not actor.is_admin and not entry['is_owner']):
+                entry['content']='';entry['attachments']=[]
+            result.append(entry)
     return result
+
+
+async def mutate_feedback_message(feedback_id,message_id,action,payload,user):
+    actor=user[0]
+    async with app.state.db.acquire() as conn:
+        async with conn.transaction():
+            root=await conn.fetchrow('SELECT author_id,status FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL FOR UPDATE',feedback_id)
+            if not root or (root['status']=='withdrawn' and not actor.is_admin and root['author_id']!=actor.user_id):raise HTTPException(404,'feedback not found')
+            if root['status']=='withdrawn':raise HTTPException(409,'请先恢复这条反馈，再修改回复')
+            message=await conn.fetchrow('SELECT * FROM shoe_workbench.feedback_messages WHERE id=$1 AND feedback_id=$2 FOR UPDATE',message_id,feedback_id)
+            if not message or message['status']=='deleted':raise HTTPException(404,'reply not found')
+            if message['author_id']!=actor.user_id:raise HTTPException(403,'只能修改本人发送的回复')
+            if action=='edit':
+                if not payload.content.strip():raise HTTPException(422,'请填写回复内容')
+                await conn.execute('UPDATE shoe_workbench.feedback_messages SET content=$2,edited_at=now(),updated_at=now() WHERE id=$1',message_id,payload.content)
+                notices=await conn.fetch('SELECT id,title FROM shoe_workbench.announcements WHERE feedback_message_id=$1 AND deleted_at IS NULL',message_id)
+                for notice in notices:
+                    context=await collaboration.notification_context(conn,feedback_id,notice['title'],message_id)
+                    await conn.execute('UPDATE shoe_workbench.announcements SET title=$2,content=$3 WHERE id=$1',notice['id'],context[0],context[1])
+            else:
+                target={'withdraw':'withdrawn','restore':'active','delete':'deleted'}[action]
+                if action=='restore' and message['status']!='withdrawn':raise HTTPException(409,'只有已撤回的回复可以恢复')
+                await conn.execute('UPDATE shoe_workbench.feedback_messages SET status=$2,updated_at=now() WHERE id=$1',message_id,target)
+                if action in ('withdraw','delete'):
+                    await conn.execute('UPDATE shoe_workbench.announcements SET deleted_at=now() WHERE feedback_message_id=$1 AND deleted_at IS NULL',message_id)
+                if action=='restore':await collaboration.notify_admins(conn,app.state.accounts,feedback_id,actor,'回复已恢复',message_id)
+            await conn.execute('UPDATE shoe_workbench.feedback SET updated_at=now() WHERE id=$1',feedback_id)
+    return {'saved':True,'id':message_id}
+
+
+@app.patch('/feedback/{feedback_id}/messages/{message_id}')
+async def edit_feedback_message(feedback_id:str,message_id:str,payload:FeedbackEdit,user=Depends(current_user)):
+    return await mutate_feedback_message(feedback_id,message_id,'edit',payload,user)
+
+
+@app.post('/feedback/{feedback_id}/messages/{message_id}/withdraw')
+async def withdraw_feedback_message(feedback_id:str,message_id:str,user=Depends(current_user)):
+    return await mutate_feedback_message(feedback_id,message_id,'withdraw',None,user)
+
+
+@app.post('/feedback/{feedback_id}/messages/{message_id}/restore')
+async def restore_feedback_message(feedback_id:str,message_id:str,user=Depends(current_user)):
+    return await mutate_feedback_message(feedback_id,message_id,'restore',None,user)
+
+
+@app.delete('/feedback/{feedback_id}/messages/{message_id}')
+async def delete_feedback_message(feedback_id:str,message_id:str,user=Depends(current_user)):
+    return await mutate_feedback_message(feedback_id,message_id,'delete',None,user)
 
 
 @app.post('/feedback/{feedback_id}/messages', status_code=201)
@@ -1127,16 +1286,16 @@ async def add_feedback_message(feedback_id: str, payload: FeedbackMessage, user=
             item = await conn.fetchrow('SELECT author_id,status FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL FOR UPDATE', feedback_id)
             if item is None:
                 raise HTTPException(404, 'feedback not found')
-            if not actor.is_admin and actor.user_id != item['author_id']:
-                raise HTTPException(403, 'only the author and administrators may reply')
             if item['status'] == 'withdrawn':
                 raise HTTPException(409, 'feedback is withdrawn')
-            if payload.reply_to and not await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.feedback_messages WHERE id=$1 AND feedback_id=$2)',payload.reply_to,feedback_id):
+            if payload.reply_to and not await conn.fetchval("SELECT EXISTS(SELECT 1 FROM shoe_workbench.feedback_messages WHERE id=$1 AND feedback_id=$2 AND status='active')",payload.reply_to,feedback_id):
                 raise HTTPException(422, 'reply target is not in this feedback')
             message_id = str(uuid.uuid4())
-            await conn.execute('INSERT INTO shoe_workbench.feedback_messages(id,feedback_id,author_id,content,reply_to) VALUES($1,$2,$3,$4,$5)',
-                               message_id, feedback_id, actor.user_id, payload.content, payload.reply_to)
+            anonymous=payload.anonymous_to_users or actor.user_id in await collaboration.anonymous_map(conn,feedback_id)
+            await conn.execute('INSERT INTO shoe_workbench.feedback_messages(id,feedback_id,author_id,content,reply_to,anonymous_to_users) VALUES($1,$2,$3,$4,$5,$6)',
+                               message_id, feedback_id, actor.user_id, payload.content, payload.reply_to,anonymous)
             await conn.execute('UPDATE shoe_workbench.feedback SET updated_at=now() WHERE id=$1', feedback_id)
+            await collaboration.notify_admins(conn,app.state.accounts,feedback_id,actor,'需求反馈有新的回复')
     return {'id': message_id}
 
 
@@ -1148,9 +1307,9 @@ async def notify_feedback_author(feedback_id: str, user=Depends(current_user)):
         if not item:
             raise HTTPException(404, 'feedback not found')
         notice_id = 'feedback-notice-' + str(uuid.uuid4())
-        await conn.execute('''INSERT INTO shoe_workbench.announcements(id,title,content,audience_user_id,status,created_by)
-            VALUES($1,$2,$3,$4,'published',$5)''', notice_id, '反馈有新的处理进展',
-            '管理员提醒您查看反馈 ' + feedback_id + ' 的最新沟通或处理状态。', item['author_id'], user[0].user_id)
+        context=await collaboration.notification_context(conn,feedback_id,'反馈有新的处理进展')
+        await conn.execute('''INSERT INTO shoe_workbench.announcements(id,title,content,audience_user_id,status,created_by,feedback_id,feedback_message_id)
+            VALUES($1,$2,$3,$4,'published',$5,$6,$7)''', notice_id,context[0],context[1],item['author_id'],user[0].user_id,feedback_id,context[2])
     return {'id': notice_id}
 
 
@@ -1158,10 +1317,10 @@ async def notify_feedback_author(feedback_id: str, user=Depends(current_user)):
 async def announcements(user=Depends(current_user)):
     actor = user[0]
     async with app.state.db.acquire() as conn:
-        rows = await conn.fetch('''SELECT a.id,a.title,a.content,a.audience_user_id,a.status,a.created_at,a.updated_at,a.images,
+        rows = await conn.fetch('''SELECT a.id,a.title,a.content,a.audience_user_id,a.status,a.created_at,a.updated_at,a.images,a.feedback_id,a.feedback_message_id,
             r.read_method,r.read_at,r.hidden_at FROM shoe_workbench.announcements a
             LEFT JOIN shoe_workbench.announcement_reads r ON r.announcement_id=a.id AND r.user_id=$1
-            WHERE a.deleted_at IS NULL AND ($2 OR (a.status='published' AND (a.audience_user_id IS NULL OR a.audience_user_id=$1)))
+            WHERE a.deleted_at IS NULL AND (a.feedback_id IS NULL OR EXISTS(SELECT 1 FROM shoe_workbench.feedback f WHERE f.id=a.feedback_id AND f.deleted_at IS NULL)) AND ($2 OR (a.status='published' AND (a.audience_user_id IS NULL OR a.audience_user_id=$1)))
             ORDER BY a.updated_at DESC LIMIT 500''', actor.user_id, actor.is_admin)
     return [dict(row, images=json_value(row['images'])) for row in rows]
 
@@ -1280,12 +1439,10 @@ async def upload_feedback_image(feedback_id: str, request: Request, user=Depends
             item = await conn.fetchrow('SELECT author_id,status FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL FOR UPDATE', feedback_id)
             if item is None:
                 raise HTTPException(404, 'feedback not found')
-            if not actor.is_admin and actor.user_id != item['author_id']:
-                raise HTTPException(403, 'not allowed')
             if item['status']=='withdrawn':
                 raise HTTPException(409,'feedback is withdrawn')
             if existing_message:
-                if not await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.feedback_messages WHERE id=$1 AND feedback_id=$2 AND author_id=$3)',existing_message,feedback_id,actor.user_id):
+                if not await conn.fetchval("SELECT EXISTS(SELECT 1 FROM shoe_workbench.feedback_messages WHERE id=$1 AND feedback_id=$2 AND author_id=$3 AND status='active')",existing_message,feedback_id,actor.user_id):
                     raise HTTPException(422,'invalid message target')
                 message_id=existing_message
             try:
@@ -1314,12 +1471,13 @@ async def read_feedback_image(attachment_id: str, user=Depends(current_user)):
     if not root_setting:
         raise HTTPException(503, 'upload storage is not configured')
     async with app.state.db.acquire() as conn:
-        row = await conn.fetchrow('''SELECT a.storage_key,a.content_type,f.status,f.author_id
+        row = await conn.fetchrow('''SELECT a.storage_key,a.content_type,f.status,f.author_id,m.status AS message_status,m.author_id AS message_author
           FROM shoe_workbench.attachments a
           JOIN shoe_workbench.feedback_messages m ON m.id=a.feedback_message_id
           JOIN shoe_workbench.feedback f ON f.id=m.feedback_id WHERE a.id=$1 AND f.deleted_at IS NULL''', canonical)
     if row is None or (row['status'] == 'withdrawn' and not user[0].is_admin and user[0].user_id != row['author_id']):
         raise HTTPException(404, 'attachment not found')
+    if row['message_status']=='deleted' or (row['message_status']=='withdrawn' and not user[0].is_admin and user[0].user_id!=row['message_author']):raise HTTPException(404,'attachment not found')
     if row['storage_key'] != canonical:
         raise HTTPException(404, 'attachment not found')
     path = Path(root_setting).resolve() / canonical
@@ -1340,10 +1498,13 @@ async def change_feedback_status(feedback_id: str, payload: FeedbackTransition, 
                 raise HTTPException(403, 'transition not allowed')
             await conn.execute('''UPDATE shoe_workbench.feedback SET status=$2,updated_at=now(),
                 resolved_at=CASE WHEN $2='resolved' THEN now() ELSE NULL END WHERE id=$1''', feedback_id, payload.status)
+            if not actor.is_admin:
+                await collaboration.notify_admins(conn,app.state.accounts,feedback_id,actor,'需求反馈状态已更新')
             if actor.is_admin and actor.user_id != row['author_id'] and payload.status == 'awaiting_confirmation':
+                context=await collaboration.notification_context(conn,feedback_id,'反馈待确认')
                 await conn.execute('''INSERT INTO shoe_workbench.announcements
-                  (id,title,content,audience_user_id,status,created_by) VALUES($1,$2,$3,$4,'published',$5)''',
-                  str(uuid.uuid4()),'反馈待确认','管理员已提交反馈的解决方案，请打开需求反馈查看并确认。',row['author_id'],actor.user_id)
+                  (id,title,content,audience_user_id,status,created_by,feedback_id,feedback_message_id) VALUES($1,$2,$3,$4,'published',$5,$6,$7)''',
+                  'feedback-notice-'+str(uuid.uuid4()),context[0],context[1],row['author_id'],actor.user_id,feedback_id,context[2])
     return {'id': feedback_id, 'status': payload.status}
 
 
