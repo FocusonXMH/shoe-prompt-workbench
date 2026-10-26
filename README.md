@@ -1,6 +1,6 @@
 # 鞋类提示词工作台
 
-中文运维交接版，更新日期：2026-10-26。个人私有仓库为 `FocusonXMH/shoe-prompt-workbench`，保存运行源码、数据库结构及中文交接说明；本次不更新公司仓库。GitHub 提交不会自动部署到服务器，也不包含真实运行数据。
+中文运维交接版，更新日期：2026-10-26。个人仓库为 `FocusonXMH/shoe-prompt-workbench`，已按所有者要求公开，保存运行源码、数据库结构及中文交接说明；不更新公司仓库。GitHub 提交不会自动部署到服务器，也不包含真实运行数据。
 
 ## 项目作用
 
@@ -34,6 +34,7 @@ shoe-prompt-workbench/
 - [线上源码校验](docs/线上源码基线.md)
 - [版本名称与微调发布](docs/版本名称与微调发布.md)
 - [最新冗余检查与维护事项](docs/冗余与维护检查-20261026.md)
+- [反馈素材与模板引用](docs/反馈素材与模板引用.md)
 
 ## 当前真实部署
 
@@ -68,6 +69,8 @@ python tests/run_unit_tests.py
 ## 2026-10-26 同步说明
 
 本次恢复个人私有仓库更新，包含上述历史改动及当前反馈协作、匿名编号、回复编辑撤回删除、通知定位、已保存账号切换、管理员凭据查看和冗余清理。上节“暂未推送”是 10 月 24 日的历史状态。
+
+同日后续：按所有者要求将仓库改为公开；增加反馈位置实时读取、视觉需求默认“其他”、参考视频上传和回复引用已发布模板。需先执行 migrations/016_feedback_template_reference.sql，再部署新程序。
 
 后续结构脚本还包括 `backend/credential_vault.sql`、`collaboration.sql`、`notification_context.sql`、`reply_lifecycle.sql`，详见部署说明。运行代码需要 backend 全部运行模块，不能只复制 app.py。SQL 和集成测试不能未经审查直接对生产环境执行。
 

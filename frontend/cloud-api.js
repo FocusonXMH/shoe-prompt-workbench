@@ -56,7 +56,7 @@
     deleteReply: (id,message) => request('/feedback/'+pathId(id)+'/messages/'+pathId(message),{method:'DELETE'}),
     editFeedback: (id, content) => request('/feedback/' + pathId(id), { method: 'PATCH', body: json({ content }) }),
     deleteFeedback: id => request('/feedback/' + pathId(id), { method: 'DELETE' }),
-    reply: (id, content, reply_to = null, anonymous_to_users = false) => request('/feedback/' + pathId(id) + '/messages', { method: 'POST', body: json({ content, reply_to, anonymous_to_users }) }),
+    reply: (id, content, reply_to = null, anonymous_to_users = false, template_id = null) => request('/feedback/' + pathId(id) + '/messages', { method: 'POST', body: json({ content, reply_to, anonymous_to_users, template_id }) }),
     notifyFeedbackAuthor: id => request('/feedback/' + pathId(id) + '/notify-author', {method:'POST'}),
     feedbackStatus: (id, status) => request('/feedback/' + pathId(id) + '/status', { method: 'PATCH', body: json({ status }) }),
     uploadFeedback: (id, blob, messageId) => request('/feedback/' + pathId(id) + '/attachments', { method: 'POST', headers: { 'Content-Type': blob.type, ...(messageId?{'X-Feedback-Message-Id':messageId}:{}) }, body: blob }),

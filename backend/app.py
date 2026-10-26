@@ -156,6 +156,7 @@ class FeedbackMessage(BaseModel):
     content: str = Field(min_length=1, max_length=5000)
     reply_to: str | None = Field(default=None, max_length=100)
     anonymous_to_users: bool = False
+    template_id: str | None = Field(default=None, max_length=100)
 
 
 class FeedbackEdit(BaseModel):
@@ -1210,9 +1211,10 @@ async def feedback_messages(feedback_id: str, user=Depends(current_user)):
         item = await conn.fetchrow('SELECT author_id,status,anonymous_to_users FROM shoe_workbench.feedback WHERE id=$1 AND deleted_at IS NULL', feedback_id)
         if item is None or (item['status'] == 'withdrawn' and not actor.is_admin and item['author_id'] != actor.user_id):
             raise HTTPException(404, 'feedback not found')
-        rows = await conn.fetch('''SELECT m.id,m.author_id,m.content,m.created_at,m.reply_to,m.status,m.updated_at,m.edited_at,
+        rows = await conn.fetch('''SELECT m.id,m.author_id,m.content,m.created_at,m.reply_to,m.status,m.updated_at,m.edited_at,m.template_reference,
             max(p.display_name) AS author_name,m.anonymous_to_users,
-            COALESCE(json_agg(a.id) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS attachments
+            COALESCE(json_agg(a.id) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS attachments,
+            COALESCE(json_object_agg(a.id,a.content_type) FILTER (WHERE a.id IS NOT NULL), '{}'::json) AS attachment_types
             FROM shoe_workbench.feedback_messages m LEFT JOIN shoe_workbench.attachments a ON a.feedback_message_id=m.id
             LEFT JOIN shoe_workbench.user_profiles p ON p.user_id=m.author_id
             WHERE m.feedback_id=$1 GROUP BY m.id ORDER BY m.created_at,m.id''', feedback_id)
@@ -1223,9 +1225,11 @@ async def feedback_messages(feedback_id: str, user=Depends(current_user)):
         for row in rows:
             entry = dict(row)
             entry['attachments'] = json_value(entry['attachments'])
+            entry['attachment_types'] = json_value(entry['attachment_types'])
+            entry['template_reference'] = json_value(entry['template_reference']) if entry['template_reference'] else None
             entry=await collaboration.decorate(conn,entry,actor,feedback_id,entry['anonymous_to_users'] or entry['author_id'] in aliases,aliases=aliases,profiles=profiles)
             if entry['status']=='deleted' or (entry['status']=='withdrawn' and not actor.is_admin and not entry['is_owner']):
-                entry['content']='';entry['attachments']=[]
+                entry['content']='';entry['attachments']=[];entry['attachment_types']={};entry['template_reference']=None
             result.append(entry)
     return result
 
@@ -1292,8 +1296,15 @@ async def add_feedback_message(feedback_id: str, payload: FeedbackMessage, user=
                 raise HTTPException(422, 'reply target is not in this feedback')
             message_id = str(uuid.uuid4())
             anonymous=payload.anonymous_to_users or actor.user_id in await collaboration.anonymous_map(conn,feedback_id)
-            await conn.execute('INSERT INTO shoe_workbench.feedback_messages(id,feedback_id,author_id,content,reply_to,anonymous_to_users) VALUES($1,$2,$3,$4,$5,$6)',
-                               message_id, feedback_id, actor.user_id, payload.content, payload.reply_to,anonymous)
+            reference=None
+            if payload.template_id:
+                template=await conn.fetchrow('''SELECT t.id,t.title,t.published_version,COALESCE(v.display_name,'v'||v.version::text) AS version_name FROM shoe_workbench.templates t
+                    JOIN shoe_workbench.template_versions v ON v.template_id=t.id AND v.version=t.published_version
+                    WHERE t.id=$1 AND t.archived_at IS NULL AND v.deleted_at IS NULL''',payload.template_id)
+                if not template: raise HTTPException(422,'引用的模板已删除或尚未发布，请重新选择')
+                reference=json.dumps({'id':template['id'],'title':template['title'],'version':template['published_version'],'version_name':template['version_name']})
+            await conn.execute('INSERT INTO shoe_workbench.feedback_messages(id,feedback_id,author_id,content,reply_to,anonymous_to_users,template_reference) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb)',
+                               message_id, feedback_id, actor.user_id, payload.content, payload.reply_to,anonymous,reference)
             await conn.execute('UPDATE shoe_workbench.feedback SET updated_at=now() WHERE id=$1', feedback_id)
             await collaboration.notify_admins(conn,app.state.accounts,feedback_id,actor,'需求反馈有新的回复')
     return {'id': message_id}
@@ -1419,16 +1430,17 @@ async def upload_feedback_image(feedback_id: str, request: Request, user=Depends
     if not root_setting:
         raise HTTPException(503, 'upload storage is not configured')
     content_type = request.headers.get('content-type', '').split(';', 1)[0].lower()
-    allowed = {'image/jpeg': b'\xff\xd8\xff', 'image/png': b'\x89PNG\r\n\x1a\n'}
+    allowed = {'image/jpeg': b'\xff\xd8\xff', 'image/png': b'\x89PNG\r\n\x1a\n', 'video/mp4': None, 'video/webm': b'\x1aE\xdf\xa3'}
     if content_type not in allowed:
-        raise HTTPException(415, 'only JPEG and PNG images are supported')
+        raise HTTPException(415, '支持 PNG、JPEG 图片及 MP4、WebM 视频')
     data = bytearray()
     async for chunk in request.stream():
         data.extend(chunk)
         if len(data) > 10 * 1024 * 1024:
-            raise HTTPException(413, 'image exceeds 10 MB')
-    if not data.startswith(allowed[content_type]):
-        raise HTTPException(415, 'image format does not match content type')
+            raise HTTPException(413, '附件不得超过 10 MB')
+    valid = len(data)>=12 and data[4:8]==b'ftyp' if content_type=='video/mp4' else data.startswith(allowed[content_type])
+    if not valid:
+        raise HTTPException(415, '附件格式与类型不匹配')
     ident, message_id = str(uuid.uuid4()), str(uuid.uuid4())
     existing_message = request.headers.get('x-feedback-message-id')
     root = Path(root_setting).resolve()

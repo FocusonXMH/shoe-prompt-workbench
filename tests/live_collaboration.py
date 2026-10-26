@@ -68,6 +68,29 @@ async def main():
         assert (await req(one,'GET','/feedback/'+fid))['status']=='withdrawn'
         assert (await req(admin,'GET','/feedback/'+fid))['status']=='withdrawn'
         await req(one,'PATCH','/feedback/'+fid+'/status',{'status':'pending'})
+        published=await req(one,'GET','/templates')
+        archived_points={r['id'] for r in await db.fetch('SELECT id FROM shoe_workbench.selling_points WHERE archived_at IS NOT NULL')}
+        assert not archived_points.intersection(p['id'] for p in await req(one,'GET','/selling-points'))
+        assert published, 'Need one existing publication for read-only reference verification'
+        template=published[0]
+        referenced=await req(admin,'POST','/feedback/'+fid+'/messages',{'content':'请试填引用模板','template_id':template['id']})
+        saved=next(r for r in await req(one,'GET','/feedback/'+fid+'/messages') if r['id']==referenced['id'])
+        assert saved['template_reference']['id']==template['id'] and saved['template_reference']['version']==template['version']
+        assert (await admin.post('/feedback/'+fid+'/messages',json={'content':'无效引用','template_id':'missing-'+tag})).status_code==422
+        video=await admin.post('/feedback/'+fid+'/attachments',content=b'\x00\x00\x00\x18ftypisom'+b'\x00'*12,headers={'Content-Type':'video/mp4','X-Feedback-Message-Id':referenced['id']})
+        assert video.status_code==201
+        video_path='/attachments/'+video.json()['id']
+        viewed=await one.get(video_path)
+        assert viewed.status_code==200 and viewed.headers['content-type']=='video/mp4'
+        saved=next(r for r in await req(one,'GET','/feedback/'+fid+'/messages') if r['id']==referenced['id'])
+        assert saved['attachment_types'][video.json()['id']]=='video/mp4'
+        assert (await admin.post('/feedback/'+fid+'/attachments',content=b'not-a-video',headers={'Content-Type':'video/mp4'})).status_code==415
+        await req(admin,'POST','/feedback/'+fid+'/messages/'+referenced['id']+'/withdraw')
+        masked=next(r for r in await req(one,'GET','/feedback/'+fid+'/messages') if r['id']==referenced['id'])
+        assert masked['template_reference'] is None and masked['attachments']==[]
+        assert (await one.get(video_path)).status_code==404
+        await req(admin,'DELETE','/feedback/'+fid+'/messages/'+referenced['id'])
+        print('PASS: publication reference version, invalid reference rejection, video format/type, withdrawn reference/media privacy')
         root2=await req(one,'POST','/feedback',{'category':'验收','content':'实名验证'});fid2=root2['id'];fids.append(fid2)
         await req(two,'POST','/feedback/'+fid2+'/messages',{'content':'新问题重新编号','anonymous_to_users':True})
         assert (await req(one,'GET','/feedback/'+fid2+'/messages'))[0]['author_name']=='匿名1'
