@@ -1,7 +1,8 @@
 /* Same-origin workbench client; no passwords or identity tokens are stored here. */
 (function () {
   'use strict';
-  const base = '/shoe-api';
+  const embedded=window.self!==window.top&&new URLSearchParams(location.search).get('embedded')==='adsight';
+  const base = embedded?'/shoe-embed-api':'/shoe-api';
   const pathId = value => encodeURIComponent(value);
   async function request(path, options = {}) {
     const response = await fetch(base + path, {
@@ -10,6 +11,7 @@
       headers: { ...(options.body && !(options.body instanceof Blob) ? { 'Content-Type': 'application/json' } : {}), ...options.headers }
     });
     if (!response.ok) {
+      if(embedded&&response.status===401)window.parent.postMessage({type:'shoe:session-expired'},location.origin);
       let detail='';try{detail=(await response.json()).detail||'';}catch(e){}
       const error = new Error(typeof detail==='string'?detail:'请求未完成（'+response.status+'）');
       error.status = response.status;
@@ -19,6 +21,7 @@
   }
   const json = value => JSON.stringify(value);
   window.ShoeCloud = {
+    base,
     helpArticles: () => request('/help/articles'),
     helpArticleRead: id => request('/help/articles/'+pathId(id)+'/read',{method:'POST'}),
     helpOnboardingSeen: () => request('/help/onboarding/seen',{method:'POST'}),

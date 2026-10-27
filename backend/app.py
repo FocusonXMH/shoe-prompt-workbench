@@ -55,7 +55,7 @@ app = FastAPI(title='Shoe prompt workbench API', lifespan=lifespan, docs_url=Non
 async def current_user(request: Request, authorization: str = Header(default='')):
     scheme, _, token = authorization.partition(' ')
     if scheme.lower() != 'bearer' or not token:
-        token = request.cookies.get('shoe_session', '')
+        token = request.cookies.get('shoe_embed_session' if getattr(request.state,'embedded',False) else 'shoe_session', '')
     if not token:
         raise HTTPException(401, 'authentication required')
     try:
@@ -257,13 +257,33 @@ def require_admin(user):
 
 @app.middleware('http')
 async def require_same_origin(request: Request, call_next):
+    if request.scope['path'].startswith('/embedded/'):
+        request.state.embedded=True
+        request.scope['path']=request.scope['path'][len('/embedded'):]
+        request.scope['raw_path']=request.scope['path'].encode()
+        if request.scope['path'].startswith('/auth/accounts') or request.scope['path']=='/auth/login':
+            return JSONResponse({'detail':'请在 AdSight 控制台切换登录账号'},status_code=409)
     # Browser cookie authentication is accepted only for same-origin writes.
     if request.method not in ('GET', 'HEAD', 'OPTIONS') and request.headers.get('origin'):
         origin = urlsplit(request.headers['origin'])
         host = request.headers.get('host', '').lower()
         if origin.scheme not in ('http', 'https') or origin.netloc.lower() != host:
             return JSONResponse({'detail': 'cross-origin request rejected'}, status_code=403)
-    return await call_next(request)
+    response=await call_next(request)
+    if request.scope['path'].startswith('/shoe'):
+        response.headers['Content-Security-Policy']="frame-ancestors 'self'"
+    return response
+
+
+@app.post('/auth/from-cpo')
+async def adopt_cpo_session(request:Request,authorization:str=Header(default='')):
+    scheme,_,token=authorization.partition(' ')
+    if scheme.lower()!='bearer' or not token or token.startswith('shoe-local.'):
+        raise HTTPException(401,'verified CPO session required')
+    user=await current_user(request,authorization)
+    response=JSONResponse({'id':user[0].user_id,'connected':True},headers={'Cache-Control':'no-store'})
+    response.set_cookie('shoe_embed_session',token,secure=True,httponly=True,samesite='strict',path='/shoe-embed-api/')
+    return response
 
 
 @app.post('/auth/login')
@@ -309,7 +329,8 @@ async def login(payload: LoginInput, request: Request):
 
 @app.post('/auth/logout')
 async def logout(request: Request, user=Depends(current_user)):
-    token = request.cookies.get('shoe_session', '')
+    embedded=getattr(request.state,'embedded',False)
+    token = request.cookies.get('shoe_embed_session' if embedded else 'shoe_session', '')
     if token.startswith('shoe-local.'):
         async with app.state.db.acquire() as conn:
             await conn.execute('DELETE FROM shoe_workbench.local_sessions WHERE token_hash=$1',hashlib.sha256(token.encode()).hexdigest())
@@ -319,7 +340,7 @@ async def logout(request: Request, user=Depends(current_user)):
         except httpx.HTTPError:
             raise HTTPException(503, 'identity service unavailable')
     response = JSONResponse({'ok': True})
-    response.delete_cookie('shoe_session', path='/', secure=True, httponly=True, samesite='strict')
+    response.delete_cookie('shoe_embed_session' if embedded else 'shoe_session', path='/shoe-embed-api/' if embedded else '/', secure=True, httponly=True, samesite='strict')
     return response
 
 

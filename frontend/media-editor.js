@@ -29,7 +29,7 @@
     box.dataset.placeholder=field.placeholder||'输入文字，可在当前位置粘贴图片';
     error.className='reply-error media-editor-error';error.setAttribute('role','alert');
     field.style.display='none';field.required=false;field.after(box,error);
-    const state={field,input,box,error,items:options.pending?options.pending.items.slice():[],cache:new Map(),urls:[],assets:options.assets||[],types:options.types||{},urlFor:options.urlFor||((id)=>'/shoe-api/attachments/'+encodeURIComponent(id))};
+    const state={field,input,box,error,items:options.pending?options.pending.items.slice():[],cache:new Map(),urls:[],assets:options.assets||[],types:options.types||{},urlFor:options.urlFor||((id)=>(window.ShoeCloud?.base||'/shoe-api')+'/attachments/'+encodeURIComponent(id))};
     fields.set(field,state);if(input)inputs.set(input,state);live.add(state);
     const revoke=()=>{state.urls.forEach(URL.revokeObjectURL);state.urls=[];};
     function figure(id){
