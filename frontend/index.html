@@ -262,6 +262,9 @@
     .usage-chart-row { display:grid;grid-template-columns:minmax(100px,1fr) 2fr 50px;gap:10px;align-items:center;margin:10px 0;font-size:12px; }
     .usage-chart-track { height:12px;border-radius:10px;background:var(--panel-2);overflow:hidden; }
     .usage-chart-fill { height:100%;border-radius:10px;background:var(--brand); }
+    .recent-usage-people { margin:14px 0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+    .recent-usage-people summary { cursor:pointer; color:var(--brand); font-weight:600; }
+    .recent-usage-people summary:focus-visible { outline:2px solid var(--brand); outline-offset:4px; }
     .usage-table-scroll { overflow-x:auto;max-width:100%;margin-top:12px; }
     .notice-feedback-context { padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--brand-2);margin-bottom:12px; }
     .personal-option { border-style:dashed!important; }
@@ -1427,8 +1430,21 @@
         const person=$('usagePerson').value,template=$('usageTemplate').value,match=function(r){return (!person||r.user_id===person)&&(!template||r.template_id===template);},rows=usageCache.rows.filter(match);
         const sum=function(key){return rows.reduce(function(n,r){return n+Number(r[key]||0);},0);};
         const global=!person&&!template,totals=global?usageCache.totals:{opens:sum('opens'),copies:sum('copies'),active_users:new Set(rows.map(function(r){return r.user_id;})).size,version_choices:sum('version_choices'),favorites_added:sum('favorites_added'),favorites_removed:sum('favorites_removed')};
-        const cards=[['近期在线（全站）',usageCache.totals.online],['有使用记录的人员',totals.active_users],['模板打开',totals.opens],['提示词复制',totals.copies],['手动选用版本',totals.version_choices],['当前已保存收藏',(usageCache.favorites||[]).filter(match).length]];
+        const recentPeople=new Map();
+        rows.forEach(function(row){
+          const opens=Number(row.opens||0), copies=Number(row.copies||0), choices=Number(row.version_choices||0);
+          if(!opens&&!copies&&!choices)return;
+          const entry=recentPeople.get(row.user_id)||{name:row.display_name||row.username||row.user_id,opens:0,copies:0,choices:0};
+          entry.opens+=opens;entry.copies+=copies;entry.choices+=choices;
+          const lastUsed=Date.parse(row.last_used);
+          if(Number.isFinite(lastUsed))entry.lastUsed=Math.max(entry.lastUsed||0,lastUsed);
+          recentPeople.set(row.user_id,entry);
+        });
+        const cards=[['近期在线（全站）',usageCache.totals.online],['有使用记录的人员',recentPeople.size],['模板打开',totals.opens],['提示词复制',totals.copies],['手动选用版本',totals.version_choices],['当前已保存收藏',(usageCache.favorites||[]).filter(match).length]];
         let html='<div class="usage-kpis">'+cards.map(function(c){return '<div class="card"><small>'+c[0]+'</small><strong>'+Number(c[1]||0)+'</strong></div>';}).join('')+'</div><p class="muted">当前周期：近 '+usageCache.days+' 天。新增收藏 '+Number(totals.favorites_added||0)+' 次，取消收藏 '+Number(totals.favorites_removed||0)+' 次。心跳每 30 秒更新，90 秒内有心跳视为近期在线；不等于一直在操作。打开不等于使用，复制也不代表已在外部 AI 成功生成。</p>';
+        const people=Array.from(recentPeople.values()).sort(function(a,b){return b.copies-a.copies||b.opens-a.opens||String(a.name).localeCompare(String(b.name),'zh-CN');});
+        const recentTimeFormat=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+        html+='<details class="recent-usage-people"><summary>查看近期使用人员 · '+people.length+' 人</summary><p class="muted">近 '+Number(usageCache.days)+' 天，跟随当前人员与模板筛选。打开、复制或手动选用版本均计入'+(usageCache.rows.length>=5000?'。接口明细达到上限，此处只统计已加载记录':'')+'。</p>'+(people.length?'<div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>姓名</th><th>打开</th><th>复制</th><th>手动选用版本</th><th>最近操作（北京时间）</th></tr></thead><tbody>'+people.map(function(person){return '<tr><td>'+escapeHtml(person.name)+'</td><td>'+person.opens+'</td><td>'+person.copies+'</td><td>'+person.choices+'</td><td>'+(person.lastUsed?escapeHtml(recentTimeFormat.format(person.lastUsed)):'—')+'</td></tr>';}).join('')+'</tbody></table></div>':'<p class="muted">当前范围内暂无使用人员。</p>')+'</details>';
         const groups=new Map();rows.forEach(function(r){const key=r.template_id+'@'+r.template_version,g=groups.get(key)||{templateId:r.template_id,title:r.title,version:r.template_version,versionName:r.version_name,opens:0,copies:0,people:new Set()};g.opens+=Number(r.opens);g.copies+=Number(r.copies);if(Number(r.copies))g.people.add(r.user_id);groups.set(key,g);});
         const mode=$('chartMode').value;
         let chartDays=[],chartGroups=[];
