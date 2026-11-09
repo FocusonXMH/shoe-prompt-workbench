@@ -82,6 +82,12 @@
     .search-box { position:relative; }
     .search-box .input { padding-left:40px; }
     .search-box:before { content:"⌕";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--muted);z-index:1; }
+    .library-actions { display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px; }
+    .worklist-entry { display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:inherit;font-weight:600;cursor:pointer; }
+    .worklist-entry:hover { background:var(--panel-2);border-color:var(--brand); }
+    .worklist-entry svg { flex:none;color:var(--brand); }
+    .worklist-entry:focus-visible { outline:2px solid var(--brand);outline-offset:2px; }
+    #worklistCount { min-width:20px;padding:0 5px;border-radius:5px;background:var(--brand-2);color:var(--brand);text-align:center;font-variant-numeric:tabular-nums; }
     .library-filters { display:flex;gap:7px;flex-wrap:wrap; }
     .library-filter { border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px;cursor:pointer; }
     .library-filter.active { background:var(--brand-2);color:var(--brand);border-color:transparent;font-weight:700; }
@@ -415,9 +421,27 @@
     .media-marker span { font-size:11px;font-weight:600;letter-spacing:1px; }
     .history-item-head { align-items:center;justify-content:flex-start;flex-wrap:wrap; }
     .history-date { margin-left:auto;font-size:11px;color:var(--muted); }
-    .rename-version { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:5px;border:0;background:transparent;border-radius:6px;color:var(--muted);cursor:pointer; }
-    .rename-version:hover,.rename-version:focus-visible { color:var(--brand);background:var(--panel-2); }
-    .rename-version svg { width:14px;height:14px; }
+    .rename-version { position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:5px;border:1px solid transparent;background:transparent;border-radius:7px;color:var(--brand);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap; }
+    .rename-version:hover { background:var(--panel-2);border-color:var(--line); }
+    .rename-version:focus-visible { outline:2px solid var(--brand);outline-offset:2px; }
+    .rename-tooltip { display:none;position:absolute;z-index:3;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:12px;pointer-events:none; }
+    .rename-version:hover .rename-tooltip,.rename-version:focus-visible .rename-tooltip { display:block; }
+    .rename-version svg { display:block;width:15px;height:15px;flex:none; }
+    .dynamic-chips .chip[data-value] { box-sizing:border-box;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere; }
+    .dynamic-chips .chip.chip--long { flex:0 0 100%;border-radius:9px;padding:10px 12px;text-align:left;line-height:1.55; }
+    .dynamic-chips .chip[data-value] { border-radius:9px;background:var(--panel-2);color:var(--text); }
+    .dynamic-chips .chip[data-value]:hover { border-color:var(--brand); }
+    .dynamic-chips .chip[data-value].selected { background:var(--brand-2);border-color:var(--brand);color:var(--text); }
+    .field-input-heading { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:8px 0 4px; }
+    .field-input-heading .field-input-label { margin:0; }
+    .field-reset { display:inline-flex;align-items:center;gap:4px;min-height:32px;border:1px solid var(--line);border-radius:7px;background:var(--panel);padding:3px 8px;color:var(--brand);font:inherit;font-size:12px;font-weight:600;cursor:pointer; }
+    .field-reset:hover { border-color:var(--brand);background:var(--panel-2); }
+    .field-reset:focus-visible { outline:2px solid var(--brand);outline-offset:2px; }
+    .dynamic-field .dynamic-value::placeholder { color:color-mix(in srgb,var(--muted) 78%,var(--panel));opacity:1; }
+    .dynamic-field .dynamic-value[data-from-option="true"] { color:var(--muted); }
+    .dynamic-field .dynamic-value:focus { outline:1px solid var(--brand);outline-offset:0; }
+    .dynamic-field .field-input-label { display:block;margin:8px 0 4px;color:var(--muted);font-size:12px; }
+    .dynamic-field .field-origin { font-size:12px;color:var(--muted);margin:7px 0; }
     .width-grip { position:absolute;top:76px;bottom:24px;width:12px;display:flex;align-items:center;justify-content:center;cursor:col-resize;touch-action:none;color:var(--muted);z-index:2; }
     .width-grip::after { content:'⋮'; }
     .width-grip:hover,.width-grip:focus-visible { background:var(--panel-2);outline:1px solid var(--line);border-radius:6px; }
@@ -539,7 +563,7 @@
           <div><strong>维护视角已开启</strong><span class="muted"> · 现在可以直接新增、编辑、隐藏和调整顺序；只有“发布”后普通用户才会看到。</span></div>
           <div class="admin-mini-tools"><button class="btn" id="openManagementBtn">管理设置</button></div>
         </div>
-        <div class="library-tools"><div class="search-box"><input class="input" id="templateSearch" placeholder="搜索模板、卖点、场景或标签"></div><div class="library-filters" id="libraryFilters"><button class="library-filter active" data-filter="all">全部</button><button class="library-filter" data-filter="favorite">收藏</button><button class="library-filter" data-filter="recent">最近使用</button><button class="library-filter" data-filter="image">图片</button><button class="library-filter" data-filter="video">视频</button><button class="btn soft" id="openWorklistBtn">本次使用 <span id="worklistCount">0</span></button></div></div>
+        <div class="library-tools"><div class="search-box"><input class="input" id="templateSearch" placeholder="搜索模板、卖点、场景或标签"></div><div class="library-actions"><div class="library-filters" id="libraryFilters" role="group" aria-label="模板分类"><button class="library-filter active" data-filter="all">全部</button><button class="library-filter" data-filter="favorite">收藏</button><button class="library-filter" data-filter="recent">最近使用</button><button class="library-filter" data-filter="image">图片</button><button class="library-filter" data-filter="video">视频</button></div><button class="worklist-entry" id="openWorklistBtn" type="button" aria-controls="worklistDrawer">本次使用清单 <span id="worklistCount">0</span><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 3 5 5-5 5"/></svg></button></div></div>
         <div class="personal-strip"><div class="card personal-card" data-personal="recent"><strong>最近使用</strong><span id="recentSummary">还没有使用记录</span></div><div class="card personal-card" data-personal="favorite"><strong>我的收藏</strong><span id="favoriteSummary">还没有收藏模板</span></div><div class="card personal-card" id="announcementSummary"><strong>最新公告</strong><span>暂无新公告</span></div></div>
         <div id="libraryContent"></div>
       </section>
@@ -567,7 +591,7 @@
           <section class="card result-card">
             <div class="result-toolbar"><h2>生成结果</h2><span class="badge" id="resultStatus">填写后生成</span></div>
             <div class="prompt-output" id="promptOutput">请在左侧填写必填信息，生成后这里会显示完整提示词，并保留必要的【】标识。</div>
-            <div class="result-bottom-actions"><button class="btn ghost" id="feedbackThisTemplate" type="button">反馈此模板</button><button class="btn primary" id="copyPromptBottomBtn" type="button">复制完整提示词</button></div>
+            <div class="result-bottom-actions"><button class="btn ghost" id="feedbackThisTemplate" type="button">反馈此模板</button><button class="btn" id="copyTemplateOriginalBtn" type="button" title="复制当前模板正文，保留原始括号与换行">复制模板原文</button><button class="btn primary" id="copyPromptBottomBtn" type="button">复制完整提示词</button></div>
             <div class="warning-line">这份输出的用途是发送给具备识图或生成能力的 AI 继续沟通；本页面不会在未接 API 时自行生成图片或视频。</div>
           </section>
         </div>
@@ -1054,14 +1078,14 @@
         $('restoreComposerDraftBtn').classList.toggle('hidden',state.previewingDraft||!Object.values(draft).some(function(v){return String(v||'').length>0;}));
         $('dynamicComposerFields').innerHTML=fields.map(function(f){
           const spot=spots[f.index]||{raw:''},suggested=personal.filter(function(x){return x.field_key===String(f.index);}).slice(0,6).map(function(x){return x.value;});const options=Array.from(new Set((f.options||[]).concat(suggested)));
-          const chips=options.length?'<div class="chip-row dynamic-chips" data-dynamic-group="'+f.index+'">'+options.map(function(o){return '<button class="chip '+((f.options||[]).includes(o)?'':'personal-option')+'" title="'+((f.options||[]).includes(o)?'快捷选项':'我的常用：复制时累计使用至少 3 次')+'" type="button" data-value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</button>';}).join('')+'<button class="chip chip-clear" type="button" data-clear="'+f.index+'">清空选择</button></div>':'';
+          const chips=options.length?'<div class="chip-row dynamic-chips" data-dynamic-group="'+f.index+'">'+options.map(function(o){const longOption=Array.from(o).length>36||/[\r\n]/.test(o);return '<button class="chip '+(longOption?'chip--long ':'')+((f.options||[]).includes(o)?'':'personal-option')+'" title="'+((f.options||[]).includes(o)?'快捷选项':'我的常用：复制时累计使用至少 3 次')+'" type="button" data-value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</button>';}).join('')+'</div>':'';
           const req=f.required?'<span class="danger">必填</span>':'<span class="field-help">选填</span>';
           let control='';
           const saved=restoreDraft&&draft[f.index]!=null?draft[f.index]:(f.defaultValue||'');
           if(f.control==='textarea')control='<textarea class="textarea dynamic-value" data-field-index="'+f.index+'" placeholder="'+escapeHtml(f.placeholder||'可自定义填写')+'">'+escapeHtml(saved)+'</textarea>';
           else if(f.control==='switch')control='<select class="select dynamic-value" data-field-index="'+f.index+'"><option value="">关闭</option><option value="1">开启</option></select>';
-          else control='<input class="input dynamic-value" data-field-index="'+f.index+'" value="'+escapeHtml(saved)+'" placeholder="'+escapeHtml(f.placeholder||spot.raw||'可自定义填写')+'">';
-          return '<section class="dynamic-field"><div class="dynamic-label"><span>'+escapeHtml(f.label)+'</span>'+req+'</div>'+chips+control+'</section>';
+          else control='<input class="input dynamic-value" data-field-index="'+f.index+'" value="'+escapeHtml(saved)+'" placeholder="'+escapeHtml(f.placeholder||'请输入内容（提示文字不参与生成）')+'">';
+          return '<section class="dynamic-field"><div class="dynamic-label"><span>'+escapeHtml(f.label)+'</span>'+req+'</div>'+chips+(chips?'<div class="field-input-heading"><span class="field-input-label">填写内容（可编辑）</span><button class="field-reset" type="button" data-clear="'+f.index+'" aria-label="清空本项选择与填写"><span aria-hidden="true">×</span> 清空本项</button></div>':'')+(saved?'<p class="field-origin">'+(restoreDraft&&draft[f.index]!=null?'已恢复上次填写，可修改':'模板预填内容，可修改或清空')+'</p>':'')+control+'</section>';
         }).join('')||'<div class="empty">该模板没有需要运营填写的字段。</div>';
         qsa('.dynamic-chips').forEach(function(row){
           const idx=row.dataset.dynamicGroup;const f=fields.find(function(x){return String(x.index)===idx;});
@@ -1075,10 +1099,10 @@
             }
             input.dispatchEvent(new Event('input',{bubbles:true}));
           });});
-          const clear=row.querySelector('[data-clear]');if(clear)clear.addEventListener('click',function(){row.querySelectorAll('.chip.selected').forEach(function(x){x.classList.remove('selected');});const input=document.querySelector('.dynamic-value[data-field-index="'+idx+'"]');if(input){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));}});
+          const clear=row.closest('.dynamic-field').querySelector('[data-clear]');if(clear)clear.addEventListener('click',function(){row.querySelectorAll('.chip.selected').forEach(function(x){x.classList.remove('selected');});const input=document.querySelector('.dynamic-value[data-field-index="'+idx+'"]');if(input){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));}});
           const customInput=document.querySelector('.dynamic-value[data-field-index="'+idx+'"]');if(customInput&&f.control!=='chips-multi')customInput.addEventListener('input',function(){row.querySelectorAll('.chip.selected[data-value]').forEach(function(chip){if(chip.dataset.value!==customInput.value)chip.classList.remove('selected');});});
         });
-        qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){const f=fields.find(function(f){return String(f.index)===input.dataset.fieldIndex;});if(f.control==='switch')input.value=restoreDraft?String(draft[f.index]||f.defaultValue||''):String(f.defaultValue||'');const row=document.querySelector('.dynamic-chips[data-dynamic-group="'+input.dataset.fieldIndex+'"]');if(row)qsa('.chip[data-value]',row).forEach(function(chip){chip.classList.toggle('selected',f.control==='chips-multi'?input.value.split('、').includes(chip.dataset.value):input.value===chip.dataset.value);});input.addEventListener('input',saveCurrentDraft);input.addEventListener('change',saveCurrentDraft);});
+        qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){const f=fields.find(function(f){return String(f.index)===input.dataset.fieldIndex;});if(f.control==='switch')input.value=restoreDraft?String(draft[f.index]||f.defaultValue||''):String(f.defaultValue||'');const row=document.querySelector('.dynamic-chips[data-dynamic-group="'+input.dataset.fieldIndex+'"]');if(row)qsa('.chip[data-value]',row).forEach(function(chip){chip.classList.toggle('selected',f.control==='chips-multi'?input.value.split('、').includes(chip.dataset.value):input.value===chip.dataset.value);});const syncOptionSource=function(){const selected=row?qsa('.chip.selected[data-value]',row).map(function(chip){return chip.dataset.value;}):[];input.dataset.fromOption=String(selected.length>0&&input.value===selected.join('、'));};syncOptionSource();input.addEventListener('input',syncOptionSource);input.addEventListener('input',saveCurrentDraft);input.addEventListener('change',saveCurrentDraft);});
       }
       function saveCurrentDraft(){const t=state.activeTemplateData;if(!t)return;data.drafts[currentUserKey()]=data.drafts[currentUserKey()]||{};const values={};qsa('.dynamic-value',$('dynamicComposerFields')).forEach(function(input){values[input.dataset.fieldIndex]=input.value;});data.drafts[currentUserKey()][t.id]=values;saveData();}
       function selectedOrCustom(selectId,customId){return $(customId).value.trim()||$(selectId).value.trim();}
@@ -1146,6 +1170,19 @@
         if(!text||$('promptOutput').querySelector('.output-pending')||text.startsWith('请填写')){toast('请先点击“生成完整提示词”');return;}
         const finish=function(){recordEvent('prompt_copy',{templateId:state.activeTemplate,version:(state.activeTemplateData||{}).version||0});const item=userList('worklists').find(function(x){return x.id===state.activeTemplate;});if(item)item.status='done';saveData();updatePersonalSummaries();toast(msg||'已复制');};
         navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text).then(finish).catch(function(){fallbackCopy(text);finish();}):(fallbackCopy(text),finish());
+      }
+      async function copyTemplateOriginal(){
+        const template=state.activeTemplateData;
+        const original=template&&templateBody(template);
+        if(typeof original!=='string'||!original.trim()){toast('当前模板没有可复制的正文');return;}
+        try{
+          if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(original);
+        }catch(error){
+          try{if(!fallbackCopy(original))throw new Error('Copy rejected');}
+          catch(fallbackError){toast('无法复制模板原文，请检查浏览器的剪贴板权限');return;}
+        }
+        toast('模板原文已复制');
       }
       function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
       function editorRecoveryKey(id){return 'shoe-admin-draft:'+currentUserKey()+':'+id;}
@@ -1227,7 +1264,7 @@
         const t=findTemplate(id||state.activeTemplate||state.editingTemplate);if(!t){toast('暂无模板历史');return;}
         try{const versions=await ShoeCloud.versions(t.id);data.versions[t.id]=versions.map(function(v){return Object.assign({},v.content,{version:v.version,versionName:v.version_name,revision:v.revision,date:v.published_at,note:'已发布版本'});});}catch(err){toast('版本历史加载失败');return;}
         const list=data.versions[t.id]||[];
-        $('historyList').innerHTML=list.length?list.map(function(v){const name=v.versionName||('v'+v.version);return '<div class="history-item"><div class="history-item-head"><strong>'+escapeHtml(name)+'</strong>'+(isAdmin()?'<button class="btn ghost rename-version" title="修改版本名称" data-version="'+v.version+'" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 4l5 5M4 20l4-1 12-12-4-4L4 15z"/></svg></button>':'')+'<span class="history-date">'+escapeHtml(new Date(v.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}))+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+(v.revision>1?' · 已进行 '+(v.revision-1)+' 次小调整':'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button><button class="btn ghost clear-version-stats" data-version="'+v.version+'">清理统计</button>'+(Number(v.version)!==Number(t.version)?'<button class="btn danger-btn delete-version" data-template="'+t.id+'" data-version="'+v.version+'">删除版本</button>':'<small class="muted">当前发布版本</small>'):'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
+        $('historyList').innerHTML=list.length?list.map(function(v){const name=v.versionName||('v'+v.version);return '<div class="history-item"><div class="history-item-head"><strong>'+escapeHtml(name)+'</strong>'+(isAdmin()?'<button class="rename-version" aria-label="编辑版本名称" data-version="'+v.version+'" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 4l5 5M4 20l4-1 12-12-4-4L4 15z"/></svg><span class="rename-tooltip" aria-hidden="true">编辑</span></button>':'')+'<span class="history-date">'+escapeHtml(new Date(v.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}))+'</span></div><p class="muted">'+escapeHtml(v.note||'版本记录')+(v.revision>1?' · 已进行 '+(v.revision-1)+' 次小调整':'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn use-version" data-template="'+t.id+'" data-version="'+v.version+'">本次使用</button>'+(isAdmin()?'<button class="btn soft restore-version" data-template="'+t.id+'" data-version="'+v.version+'">恢复为草稿</button><button class="btn ghost clear-version-stats" data-version="'+v.version+'">清理统计</button>'+(Number(v.version)!==Number(t.version)?'<button class="btn danger-btn delete-version" data-template="'+t.id+'" data-version="'+v.version+'">删除版本</button>':'<small class="muted">当前发布版本</small>'):'')+'</div></div>';}).join(''):'<div class="empty">还没有历史版本。</div>';
         $('historyDrawer').classList.add('open');
         qsa('.history-item',$('historyList')).forEach(function(row,index){const b=document.createElement('button');b.type='button';b.className='btn ghost';b.textContent='反馈此版本';b.onclick=function(){startTargetFeedback(t,null,list[index]);};row.lastElementChild.appendChild(b);});
         qsa('.rename-version').forEach(function(button){button.onclick=function(){const version=Number(button.dataset.version),v=list.find(function(x){return x.version===version;}),head=button.closest('.history-item-head');if(head.querySelector('input'))return;const input=document.createElement('input');input.className='input';input.maxLength=60;input.value=v.versionName||('v'+version);input.setAttribute('aria-label','版本名称');const save=document.createElement('button');save.className='btn soft';save.textContent='保存名称';const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent='取消';const error=document.createElement('p');error.className='reply-error';button.closest('.history-item').appendChild(error);save.onclick=async function(){save.disabled=true;try{const result=await ShoeCloud.renameVersion(t.id,version,input.value);v.versionName=result.version_name;if(Number(t.version)===version){t.versionName=result.version_name;if(state.activeTemplateData&&Number(state.activeTemplateData.version)===version)state.activeTemplateData.versionName=result.version_name;}renderLibrary();await openHistory(t.id);}catch(err){error.textContent=err.message||'名称未保存';save.disabled=false;}};cancel.onclick=function(){openHistory(t.id);};head.replaceChildren(input,save,cancel);input.focus();input.select();};});
@@ -1597,6 +1634,7 @@
         $('closeWorklist').addEventListener('click',function(){$('worklistDrawer').classList.remove('open');});
         $('clearWorklist').addEventListener('click',function(){data.worklists[currentUserKey()]=[];saveData();renderWorklist();renderLibrary();toast('本次使用清单已清空');});
         $('composerForm').addEventListener('submit',function(e){e.preventDefault();generatePrompt();});
+        $('copyTemplateOriginalBtn').addEventListener('click',copyTemplateOriginal);
         $('copyPromptBottomBtn').addEventListener('click',function(){const text=$('promptOutput').textContent;if(!state.generatedValues){toast('请先填写并生成完整提示词');return;}copyText(text,'完整提示词已复制');});
         $('feedbackThisTemplate').addEventListener('click',function(){const t=findTemplate(state.activeTemplate);if(t)startTargetFeedback(t,null,state.activeTemplateData||t);});
         $('feedbackArea').addEventListener('input',function(){state.feedbackTarget=this.value.trim()||null;});
