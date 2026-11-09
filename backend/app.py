@@ -797,7 +797,7 @@ async def usage_dashboard(days: int=30,user=Depends(current_user)):
             count(*) FILTER(WHERE e.event_type='version_select') AS version_choices,
             count(*) FILTER(WHERE e.event_type='favorite_add') AS favorites_added,
             count(*) FILTER(WHERE e.event_type='favorite_remove') AS favorites_removed,
-            max(e.created_at) AS last_used"""+scope+"""
+            max(e.created_at) FILTER(WHERE e.event_type IN ('template_open','prompt_copy','version_select')) AS last_used"""+scope+"""
             GROUP BY e.user_id,e.template_id,t.title,e.template_version,v.display_name
             ORDER BY copies DESC,opens DESC LIMIT 5000""",days)
         trend=await conn.fetch("""SELECT (e.created_at AT TIME ZONE 'Asia/Shanghai')::date AS day,e.user_id,e.template_id,
