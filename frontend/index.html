@@ -259,6 +259,9 @@
     .usage-controls .field { flex:1;min-width:130px; }
     .usage-kpis .card { padding:12px;flex:1;min-width:115px; }
     .usage-kpis strong { display:block;font-size:23px; }
+    .recent-usage-people { margin:14px 0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+    .recent-usage-people summary { cursor:pointer; color:var(--brand); font-weight:600; }
+    .recent-usage-people summary:focus-visible { outline:2px solid var(--brand); outline-offset:4px; }
     .usage-chart-row { display:grid;grid-template-columns:minmax(100px,1fr) 2fr 50px;gap:10px;align-items:center;margin:10px 0;font-size:12px; }
     .usage-chart-track { height:12px;border-radius:10px;background:var(--panel-2);overflow:hidden; }
     .usage-chart-fill { height:100%;border-radius:10px;background:var(--brand); }
@@ -564,7 +567,7 @@
           <section class="card result-card">
             <div class="result-toolbar"><h2>生成结果</h2><span class="badge" id="resultStatus">填写后生成</span></div>
             <div class="prompt-output" id="promptOutput">请在左侧填写必填信息，生成后这里会显示完整提示词，并保留必要的【】标识。</div>
-            <div class="result-bottom-actions"><button class="btn ghost" id="feedbackThisTemplate" type="button">反馈此模板</button><button class="btn primary" id="copyPromptBottomBtn" type="button">复制完整提示词</button></div>
+            <div class="result-bottom-actions"><button class="btn ghost" id="feedbackThisTemplate" type="button">反馈此模板</button><button class="btn" id="copyTemplateOriginalBtn" type="button" title="复制当前模板正文，保留原始括号与换行">复制模板原文</button><button class="btn primary" id="copyPromptBottomBtn" type="button">复制完整提示词</button></div>
             <div class="warning-line">这份输出的用途是发送给具备识图或生成能力的 AI 继续沟通；本页面不会在未接 API 时自行生成图片或视频。</div>
           </section>
         </div>
@@ -691,7 +694,9 @@
     <section class="management-panel" id="manage-resetRequests"><div class="section-title"><div><h3>密码重置申请</h3><p>处理后会显示一次性的新账号与新密码；请复制后通过内部渠道发送给对应员工。</p></div></div><div class="manage-list" id="resetRequestList"></div></section>
     <section class="management-panel" id="manage-announcements"><div class="section-title"><div><h3>公告</h3><p>发布文字说明或模板更新通知；不会强制打断用户。</p></div><button class="btn primary" id="addAnnouncementBtn">＋ 发布公告</button></div><div class="manage-list" id="announcementManageList"></div></section>
     <section class="management-panel" id="manage-feedbackTypes"><div class="section-title"><div><h3>反馈类别</h3><p>运营和美工可以看到不同问题示例；类别可增加、停用与排序。</p></div><button class="btn primary" id="addFeedbackTypeBtn">＋ 新增类别</button></div><div class="manage-list" id="feedbackTypeManageList"></div></section>
-    <section class="management-panel" id="manage-data"><div class="section-title"><div><h3>使用数据</h3><p>按人员、模板和版本查看实际打开与复制情况；复制次数作为已使用的参考。</p></div><button class="btn" id="refreshUsage">刷新</button></div><div class="usage-controls"><div class="field"><label for="usagePeriod">统计周期</label><select class="select" id="usagePeriod"><option value="7">近 7 天</option><option value="30" selected>近 30 天</option><option value="90">近 90 天</option></select></div><div class="field"><label for="usagePerson">人员</label><select class="select" id="usagePerson"><option value="">全部人员</option></select></div><div class="field"><label for="usageTemplate">模板</label><select class="select" id="usageTemplate"><option value="">全部模板</option></select></div><div class="field"><label for="chartMode">查看方式</label><select class="select" id="chartMode"><option value="recommended">版本对比</option><option value="trend">每日趋势</option><option value="table">人员与版本明细</option></select></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0"><button class="btn ghost" id="clearTemplateUsage" disabled type="button">清理此模板统计</button><small class="muted">先选择模板。清理其已有全部统计，不限当前周期；之后的新使用重新累计，不删除收藏。</small></div><p id="usageClearStatus" class="muted" role="status"></p><div id="dataVisual"></div><h3 style="margin-top:22px">高频填写与选项</h3><p class="muted">只记录复制时使用的短选项，不记录长段落或完整提示词。重复使用 3 次的自定义短内容会成为本人的常用项；公共选项由管理员维护。</p><input class="input" id="usageWordSearch" placeholder="搜索字段或词条"><div id="usageWords"></div></section>
+
+    <section class="management-panel" id="manage-data"><div class="section-title"><div><h3>使用数据</h3><p>按人员、模板和版本查看实际打开与复制情况；复制次数作为已使用的参考。</p></div><button class="btn" id="refreshUsage">刷新</button></div><div class="usage-controls"><div class="field"><label for="usagePeriod">统计周期</label><select class="select" id="usagePeriod"><option value="7">近 7 天</option><option value="30" selected>近 30 天</option><option value="90">近 90 天</option></select></div><div class="field"><label for="usagePerson">人员</label><select class="select" id="usagePerson"><option value="">全部人员</option></select></div><div class="field"><label for="usageTemplate">模板</label><select class="select" id="usageTemplate"><option value="">全部模板</option></select></div><div class="field"><label for="chartMode">查看方式</label><select class="select" id="chartMode"><option value="recommended">版本对比</option><option value="trend">每日趋势</option><option value="table">人员与版本明细</option></select></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0"><button class="btn ghost" id="clearTemplateUsage" disabled type="button">清理此模板统计</button><small class="muted">先选择模板。清理其已有全部统计，不限当前周期；之后的新使用重新累计，不删除收藏。</small></div><p id="usageClearStatus" class="muted" role="status"></p><div id="dataVisual"></div><h3 style="margin-top:22px">高频填写与选项</h3><p class="muted">原文复制按模板版本统计；填写内容只记录复制完整提示词时使用的短选项，不记录长段落或完整提示词。重复使用 3 次的自定义短内容会成为本人的常用项；公共选项由管理员维护。</p><input class="input" id="usageWordSearch" placeholder="搜索模板、原文复制、字段或词条"><div id="usageWords"></div></section>
+
   </div></dialog>
 
   <dialog id="userEditDialog"><form class="dialog-card" id="userEditForm"><div class="dialog-head"><div><h2 id="userEditTitle">新增用户</h2><p class="muted" style="margin:0">账号与 CPO 使用同一套身份信息。</p></div><button class="icon-btn" type="button" data-close-dialog>×</button></div><div class="field"><label for="newUserName">姓名</label><input class="input" id="newUserName" required></div><div class="form-two" style="margin-top:12px"><div class="field"><label for="newUserRole">权限</label><select class="select" id="newUserRole"><option value="user">普通用户</option><option value="management">管理者</option><option value="admin">超级管理员</option></select></div><div class="field"><label for="newUserCategory">人员分类</label><select class="select" id="newUserCategory"><option>运营</option><option>美工</option><option>产品</option><option>AI</option><option>管理</option><option>其他</option><option value="custom">自定义…</option></select><input class="input hidden" id="newUserCategoryCustom" style="margin-top:8px" placeholder="输入人员分类"></div></div><div class="field" style="margin-top:14px"><label for="newUsername">账号</label><input class="input" id="newUsername" required autocomplete="off"><small id="accountHint" class="muted" aria-live="polite"></small></div><p class="muted">选择分类后自动填入前缀，再填写姓名缩写。初始密码会在创建后显示，可直接复制。</p><div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" id="saveUserBtn" type="submit">创建并生成初始密码</button></div></form></dialog>
@@ -776,12 +781,16 @@
       function recordEvent(type,props){
         const mapped={template_view:'template_open',prompt_copy:'prompt_copy',version_select:'version_select',favorite_add:'favorite_add',favorite_remove:'favorite_remove'}[type];if(!mapped||!props||!props.templateId||!cloudReady)return;
         const values=state.generatedValues||{},t=state.activeTemplateData,items=[];
-        if(mapped==='prompt_copy'&&t&&!state.previewingDraft){
+
+        if(mapped==='prompt_copy'&&!props.originalCopy&&t&&!state.previewingDraft){
+
           const fields=(t.bracketFields||[]).filter(function(f){return f.mode!=='fixed'&&!['textarea','switch'].includes(f.control);});
           fields.forEach(function(f){const value=String(values[f.index]||'').trim();if(value&&value.length<=60&&!/[\r\n]/.test(value)){const parts=f.control==='chips-multi'?value.split('、').map(function(x){return x.trim();}).filter(Boolean):[value];parts.forEach(function(part){items.push({key:String(f.index),value:part});});}});
           if(!fields.length)(t.fields||[]).filter(function(key){return ['shoeType','scene','season','sellingPoint','count'].includes(key);}).forEach(function(key){const value=String(values[key]||'').trim();if(value&&value.length<=60&&!/[\r\n]/.test(value))items.push({key:key,value:value});});
         }
-        ShoeCloud.event({event_type:mapped,template_id:props.templateId,template_version:props.version||null,field_values:items.slice(0,100)}).catch(function(){console.warn('使用记录未保存');});
+
+        return ShoeCloud.event({event_type:mapped,original_copy:!!props.originalCopy,template_id:props.templateId,template_version:props.version||null,field_values:items.slice(0,100)}).catch(function(){if(mapped==='prompt_copy')toast('已复制，但使用记录未保存');else console.warn('使用记录未保存');});
+
       }
       function templateBody(t){return t.sourceKey?source[t.sourceKey]:(t.body||'');}
       function toast(msg){
@@ -1139,12 +1148,34 @@
         }
         toast('完整提示词已生成');
       }
-      function copyText(text,msg){
-        if(!text||$('promptOutput').querySelector('.output-pending')||text.startsWith('请填写')){toast('请先点击“生成完整提示词”');return;}
-        const finish=function(){recordEvent('prompt_copy',{templateId:state.activeTemplate,version:(state.activeTemplateData||{}).version||0});const item=userList('worklists').find(function(x){return x.id===state.activeTemplate;});if(item)item.status='done';saveData();updatePersonalSummaries();toast(msg||'已复制');};
-        navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text).then(finish).catch(function(){fallbackCopy(text);finish();}):(fallbackCopy(text),finish());
+
+      async function writePromptClipboard(text){
+        try{await navigator.clipboard.writeText(text);return true;}catch(error){
+          try{return !!fallbackCopy(text);}catch(fallbackError){return false;}
+        }
       }
-      function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+      async function copyText(text,msg){
+
+        if(!text||$('promptOutput').querySelector('.output-pending')||text.startsWith('请填写')){toast('请先点击“生成完整提示词”');return;}
+
+        const templateId=state.activeTemplate,version=(state.activeTemplateData||{}).version||0;
+        if(!await writePromptClipboard(text)){toast('复制失败，请检查浏览器的剪贴板权限');return;}
+        recordEvent('prompt_copy',{templateId,version});
+        const item=userList('worklists').find(function(x){return x.id===templateId;});if(item)item.status='done';saveData();updatePersonalSummaries();toast(msg||'已复制');
+
+      }
+
+      async function copyTemplateOriginal(){
+        const template=state.activeTemplateData;
+        const original=template&&templateBody(template);
+        if(typeof original!=='string'||!original.trim()){toast('当前模板没有可复制的正文');return;}
+        const templateId=state.activeTemplate,version=template.version||0;
+        if(!await writePromptClipboard(original)){toast('无法复制模板原文，请检查浏览器的剪贴板权限');return;}
+        recordEvent('prompt_copy',{templateId,version,originalCopy:true});
+        toast('模板原文已复制');
+      }
+      function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{return document.execCommand('copy');}finally{ta.remove();}}
+
       function editorRecoveryKey(id){return 'shoe-admin-draft:'+currentUserKey()+':'+id;}
       function readEditorRecovery(id){try{return JSON.parse(localStorage.getItem(editorRecoveryKey(id))||'null');}catch(e){return null;}}
       function clearEditorRecovery(id){try{localStorage.removeItem(editorRecoveryKey(id));}catch(e){}}
@@ -1427,13 +1458,31 @@
         const person=$('usagePerson').value,template=$('usageTemplate').value,match=function(r){return (!person||r.user_id===person)&&(!template||r.template_id===template);},rows=usageCache.rows.filter(match);
         const sum=function(key){return rows.reduce(function(n,r){return n+Number(r[key]||0);},0);};
         const global=!person&&!template,totals=global?usageCache.totals:{opens:sum('opens'),copies:sum('copies'),active_users:new Set(rows.map(function(r){return r.user_id;})).size,version_choices:sum('version_choices'),favorites_added:sum('favorites_added'),favorites_removed:sum('favorites_removed')};
-        const cards=[['近期在线（全站）',usageCache.totals.online],['有使用记录的人员',totals.active_users],['模板打开',totals.opens],['提示词复制',totals.copies],['手动选用版本',totals.version_choices],['当前已保存收藏',(usageCache.favorites||[]).filter(match).length]];
+
+        const recentPeople=new Map();
+        rows.forEach(function(row){
+          const opens=Number(row.opens||0), copies=Number(row.copies||0), choices=Number(row.version_choices||0);
+          if(!opens&&!copies&&!choices)return;
+          const entry=recentPeople.get(row.user_id)||{name:row.display_name||row.username||row.user_id,opens:0,copies:0,original:0,choices:0};
+          entry.opens+=opens;entry.copies+=copies;entry.original+=Number(row.original_copies||0);entry.choices+=choices;
+          const lastUsed=Date.parse(row.last_used);
+          if(Number.isFinite(lastUsed))entry.lastUsed=Math.max(entry.lastUsed||0,lastUsed);
+          recentPeople.set(row.user_id,entry);
+        });
+        const originalCopies=global?Number(totals.original_copies||0):sum('original_copies');
+        const cards=[['近期在线（全站）',usageCache.totals.online],['有使用记录的人员',recentPeople.size],['模板打开',totals.opens],['复制总次数',totals.copies],['复制模板原文',originalCopies],['复制完整提示词',Number(totals.copies)-originalCopies],['手动选用版本',totals.version_choices],['当前已保存收藏',(usageCache.favorites||[]).filter(match).length]];
         let html='<div class="usage-kpis">'+cards.map(function(c){return '<div class="card"><small>'+c[0]+'</small><strong>'+Number(c[1]||0)+'</strong></div>';}).join('')+'</div><p class="muted">当前周期：近 '+usageCache.days+' 天。新增收藏 '+Number(totals.favorites_added||0)+' 次，取消收藏 '+Number(totals.favorites_removed||0)+' 次。心跳每 30 秒更新，90 秒内有心跳视为近期在线；不等于一直在操作。打开不等于使用，复制也不代表已在外部 AI 成功生成。</p>';
-        const groups=new Map();rows.forEach(function(r){const key=r.template_id+'@'+r.template_version,g=groups.get(key)||{templateId:r.template_id,title:r.title,version:r.template_version,versionName:r.version_name,opens:0,copies:0,people:new Set()};g.opens+=Number(r.opens);g.copies+=Number(r.copies);if(Number(r.copies))g.people.add(r.user_id);groups.set(key,g);});
+        const people=Array.from(recentPeople.values()).sort(function(a,b){return b.copies-a.copies||b.opens-a.opens||String(a.name).localeCompare(String(b.name),'zh-CN');});
+        const recentTimeFormat=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+        html+='<details class="recent-usage-people"><summary>查看近期使用人员 · '+people.length+' 人</summary><p class="muted">近 '+Number(usageCache.days)+' 天，跟随当前人员与模板筛选。打开、复制或手动选用版本均计入'+(usageCache.rows.length>=5000?'。接口明细达到上限，此处只统计已加载记录':'')+'。</p>'+(people.length?'<div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>姓名</th><th>打开</th><th>复制合计</th><th>模板原文</th><th>完整提示词</th><th>手动选用版本</th><th>最近操作（北京时间）</th></tr></thead><tbody>'+people.map(function(person){return '<tr><td>'+escapeHtml(person.name)+'</td><td>'+person.opens+'</td><td>'+person.copies+'</td><td>'+person.original+'</td><td>'+(person.copies-person.original)+'</td><td>'+person.choices+'</td><td>'+(person.lastUsed?escapeHtml(recentTimeFormat.format(person.lastUsed)):'—')+'</td></tr>';}).join('')+'</tbody></table></div>':'<p class="muted">当前范围内暂无使用人员。</p>')+'</details>';
+        const groups=groupCopyRows(rows);
+
         const mode=$('chartMode').value;
         let chartDays=[],chartGroups=[];
         if(mode==='trend'){
-          const daily=new Map();for(let i=usageCache.days-1;i>=0;i--){const day=new Date(new Date(usageCache.as_of).getTime()-i*86400000).toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'});daily.set(day,{day:day,opens:0,copies:0});}usageCache.trend.filter(match).forEach(function(r){const day=String(r.day),g=daily.get(day)||{day:day,opens:0,copies:0};g.opens+=Number(r.opens);g.copies+=Number(r.copies);daily.set(day,g);});
+
+          const daily=new Map();for(let i=usageCache.days-1;i>=0;i--){const day=new Date(new Date(usageCache.as_of).getTime()-i*86400000).toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'});daily.set(day,{day:day,opens:0,copies:0,original:0});}usageCache.trend.filter(match).forEach(function(r){const day=String(r.day),g=daily.get(day)||{day:day,opens:0,copies:0,original:0};g.opens+=Number(r.opens);g.copies+=Number(r.copies);g.original+=Number(r.original_copies||0);daily.set(day,g);});
+
           chartDays=Array.from(daily.values()).sort(function(a,b){return a.day.localeCompare(b.day);});
           html+='<h3>每日模板使用趋势</h3><p class="muted"><span style="color:var(--brand)">━━ 复制提示词</span>　<span>┄┄ 打开模板</span> · 单位：次。不包含收藏；复制次数作为使用参考。</p>';
           if(chartDays.length){const days=chartDays,max=Math.max(1,...days.map(function(d){return Math.max(d.opens,d.copies);})),x=function(i){return 42+(days.length===1?0:i/(days.length-1)*520);},y=function(n){return 155-n/max*125;};
@@ -1442,18 +1491,31 @@
         }else if(mode==='recommended'){
           chartGroups=Array.from(groups.values()).sort(function(a,b){return b.copies-a.copies;});const max=Math.max(1,...chartGroups.map(function(g){return g.copies;}));
           html+='<h3>各模板版本的提示词复制次数</h3><p class="muted">横条仅表示复制次数，不是收藏数。点击一行展开该版本的人员使用明细。</p>';
-          html+=chartGroups.length?chartGroups.map(function(g,i){return '<button class="usage-chart-row" data-usage-group="'+i+'" aria-expanded="false" style="width:100%;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:10px 0"><span>'+escapeHtml(g.title)+' · '+escapeHtml(g.versionName||(g.version?'v'+g.version:'未记版本'))+'</span><span class="usage-chart-track"><span class="usage-chart-fill" style="display:block;width:'+Math.round(g.copies/max*100)+'%"></span></span><span>'+g.copies+' 次</span></button><div id="usageGroup'+i+'" class="hidden" style="padding:8px 12px;border-left:2px solid var(--line)"></div>';}).join(''):'<div class="empty">当前筛选下暂无使用记录。</div>';
+
+          html+=chartGroups.length?chartGroups.map(function(g,i){return '<button class="usage-chart-row" data-usage-group="'+i+'" aria-expanded="false" style="width:100%;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:10px 0"><span>'+escapeHtml(g.title)+' · '+escapeHtml(g.versionName||(g.version?'v'+g.version:'未记版本'))+'<small class="muted" style="display:block">原文 '+g.original+' · 完整提示词 '+(g.copies-g.original)+'</small></span><span class="usage-chart-track"><span class="usage-chart-fill" style="display:block;width:'+Math.round(g.copies/max*100)+'%"></span></span><span>'+g.copies+' 次</span></button><div id="usageGroup'+i+'" class="hidden" style="padding:8px 12px;border-left:2px solid var(--line)"></div>';}).join(''):'<div class="empty">当前筛选下暂无使用记录。</div>';
+
         }
-        const table='<div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>人员</th><th>模板</th><th>版本</th><th>打开</th><th>复制</th><th>手动选用</th><th>新增收藏</th></tr></thead><tbody>'+rows.slice(0,200).map(function(r){return '<tr><td>'+escapeHtml(r.display_name||r.username||r.user_id)+'</td><td>'+escapeHtml(r.title)+'</td><td>'+escapeHtml(r.version_name||(r.template_version?'v'+Number(r.template_version):'未记'))+'</td><td>'+Number(r.opens)+'</td><td>'+Number(r.copies)+'</td><td>'+Number(r.version_choices)+'</td><td>'+Number(r.favorites_added)+'</td></tr>';}).join('')+'</tbody></table></div><small class="muted">明细显示前 200 组，可使用上方人员、模板筛选缩小范围。手动选用历史版本不等于管理员回退公共版本。</small>';
+
+        const table='<div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>人员</th><th>模板</th><th>版本</th><th>打开</th><th>复制合计</th><th>模板原文</th><th>完整提示词</th><th>手动选用</th><th>新增收藏</th></tr></thead><tbody>'+rows.slice(0,200).map(function(r){return '<tr><td>'+escapeHtml(r.display_name||r.username||r.user_id)+'</td><td>'+escapeHtml(r.title)+'</td><td>'+escapeHtml(r.version_name||(r.template_version?'v'+Number(r.template_version):'未记'))+'</td><td>'+Number(r.opens)+'</td><td>'+Number(r.copies)+'</td><td>'+Number(r.original_copies||0)+'</td><td>'+(Number(r.copies)-Number(r.original_copies||0))+'</td><td>'+Number(r.version_choices)+'</td><td>'+Number(r.favorites_added)+'</td></tr>';}).join('')+'</tbody></table></div><small class="muted">明细显示前 200 组，可使用上方人员、模板筛选缩小范围。手动选用历史版本不等于管理员回退公共版本。</small>';
+
         $('dataVisual').innerHTML=html+(mode==='table'?table:'');renderUsageWords();
-        if(chartDays.length){const showDay=function(i){const d=chartDays[i];$('usageDayValues').textContent=d.day+'　打开模板 '+d.opens+' 次　·　复制提示词 '+d.copies+' 次';const x=42+(chartDays.length===1?0:i/(chartDays.length-1)*520);$('usageCrosshair').setAttribute('x1',x);$('usageCrosshair').setAttribute('x2',x);};qsa('[data-usage-day]').forEach(function(el){['pointerenter','click','focus'].forEach(function(event){el.addEventListener(event,function(){showDay(Number(el.dataset.usageDay));});});});showDay(chartDays.length-1);}
-        qsa('[data-usage-group]').forEach(function(el){el.onclick=function(){const i=Number(el.dataset.usageGroup),g=chartGroups[i],panel=$('usageGroup'+i),open=el.getAttribute('aria-expanded')!=='true';el.setAttribute('aria-expanded',String(open));panel.classList.toggle('hidden',!open);if(open){panel.innerHTML='<p style="margin:0 0 8px">复制 '+g.copies+' 次 · 复制人数 '+g.people.size+' · 打开 '+g.opens+' 次</p>'+rows.filter(function(r){return r.template_id===g.templateId&&r.template_version===g.version;}).map(function(r){return '<div>'+escapeHtml(r.display_name||r.username||r.user_id)+'：打开 '+Number(r.opens)+' 次，复制 '+Number(r.copies)+' 次，手动选用 '+Number(r.version_choices)+' 次</div>';}).join('');}};});
+
+        if(chartDays.length){const showDay=function(i){const d=chartDays[i];$('usageDayValues').textContent=d.day+'　打开 '+d.opens+' 次　·　复制 '+d.copies+' 次（原文 '+d.original+'，完整提示词 '+(d.copies-d.original)+'）';const x=42+(chartDays.length===1?0:i/(chartDays.length-1)*520);$('usageCrosshair').setAttribute('x1',x);$('usageCrosshair').setAttribute('x2',x);};qsa('[data-usage-day]').forEach(function(el){['pointerenter','click','focus'].forEach(function(event){el.addEventListener(event,function(){showDay(Number(el.dataset.usageDay));});});});showDay(chartDays.length-1);}
+
+        qsa('[data-usage-group]').forEach(function(el){el.onclick=function(){const i=Number(el.dataset.usageGroup),g=chartGroups[i],panel=$('usageGroup'+i),open=el.getAttribute('aria-expanded')!=='true';el.setAttribute('aria-expanded',String(open));panel.classList.toggle('hidden',!open);if(open){panel.innerHTML='<p style="margin:0 0 8px">复制 '+g.copies+' 次（原文 '+g.original+'，完整提示词 '+(g.copies-g.original)+'） · 复制人数 '+g.people.size+' · 打开 '+g.opens+' 次</p>'+rows.filter(function(r){return r.template_id===g.templateId&&r.template_version===g.version;}).map(function(r){return '<div>'+escapeHtml(r.display_name||r.username||r.user_id)+'：打开 '+Number(r.opens)+' 次，复制 '+Number(r.copies)+' 次（原文 '+Number(r.original_copies||0)+'，完整提示词 '+(Number(r.copies)-Number(r.original_copies||0))+'），手动选用 '+Number(r.version_choices)+' 次</div>';}).join('');}};});
+
       }
+
+      function groupCopyRows(rows){const groups=new Map();rows.forEach(function(r){const key=r.template_id+'@'+r.template_version,g=groups.get(key)||{templateId:r.template_id,title:r.title,version:r.template_version,versionName:r.version_name,opens:0,copies:0,original:0,rawPeople:new Set(),people:new Set()};g.opens+=Number(r.opens);g.copies+=Number(r.copies);g.original+=Number(r.original_copies||0);if(Number(r.original_copies))g.rawPeople.add(r.user_id);if(Number(r.copies))g.people.add(r.user_id);groups.set(key,g);});return groups;}
       function renderUsageWords(){
         if(!usageCache)return;const person=$('usagePerson').value,template=$('usageTemplate').value,q=$('usageWordSearch').value.trim().toLowerCase(),groups=new Map();
         usageCache.words.filter(function(r){return (!person||r.user_id===person)&&(!template||r.template_id===template)&&(!q||(r.field_label+' '+r.value+' '+r.title).toLowerCase().includes(q));}).forEach(function(r){const key=[r.template_id,r.template_version,r.field_key,r.value].join('::'),g=groups.get(key)||Object.assign({},r,{uses:0,people:new Set()});g.uses+=Number(r.uses);g.people.add(r.user_id);groups.set(key,g);});
         const words=Array.from(groups.values()).sort(function(a,b){return b.uses-a.uses;}).slice(0,40);
-        $('usageWords').innerHTML=words.length?'<p class="muted">'+escapeHtml(usageCache.word_scope)+'。当前显示频率最高的 40 项。</p><div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>模板 / 版本</th><th>字段</th><th>内容</th><th>次数 / 人数</th><th>维护</th></tr></thead><tbody>'+words.map(function(w,i){return '<tr><td>'+escapeHtml(w.title)+' · '+escapeHtml(w.version_name||('v'+w.template_version))+'</td><td>'+escapeHtml(w.field_label)+'</td><td>'+escapeHtml(w.value)+'</td><td>'+w.uses+' / '+w.people.size+'</td><td><button class="btn word-maintain" data-index="'+i+'" '+(findTemplate(w.template_id)?'':'disabled')+'>'+(findTemplate(w.template_id)?'维护选项':'已归档')+'</button></td></tr>';}).join('')+'</tbody></table></div>':'<div class="empty">尚无符合条件的短选项记录。功能上线后，复制提示词时才会开始累计。</div>';
+
+        const raw=Array.from(groupCopyRows(usageCache.rows.filter(r=>(!person||person===r.user_id)&&(!template||template===r.template_id))).values()).filter(g=>g.original>0&&('原文复制 复制模板原文 '+g.title+' '+(g.versionName||'')+' v'+g.version).toLowerCase().includes(q)).sort((a,b)=>b.original-a.original);
+        const rawHtml='<h4>直接复制模板原文 · 近 '+Number(usageCache.days)+' 天</h4>'+(usageCache.rows.length>=5000?'<p class="muted">已达到明细上限，仅统计已加载记录。</p>':'')+(raw.length?'<div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>模板 / 版本</th><th>原文复制次数</th><th>使用人数</th></tr></thead><tbody>'+raw.map(g=>'<tr><td>'+escapeHtml(g.title)+' · '+escapeHtml(g.versionName||(g.version?'v'+g.version:'未记版本'))+'</td><td>'+g.original+'</td><td>'+g.rawPeople.size+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted">当前筛选范围内暂无原文复制记录。</p>')+'<h4>常用短选项</h4>';
+        $('usageWords').innerHTML=rawHtml+(words.length?'<p class="muted">'+escapeHtml(usageCache.word_scope)+'。当前显示频率最高的 40 项。</p><div class="usage-table-scroll"><table class="field-operation-table"><thead><tr><th>模板 / 版本</th><th>字段</th><th>内容</th><th>次数 / 人数</th><th>维护</th></tr></thead><tbody>'+words.map(function(w,i){return '<tr><td>'+escapeHtml(w.title)+' · '+escapeHtml(w.version_name||('v'+w.template_version))+'</td><td>'+escapeHtml(w.field_label)+'</td><td>'+escapeHtml(w.value)+'</td><td>'+w.uses+' / '+w.people.size+'</td><td><button class="btn word-maintain" data-index="'+i+'" '+(findTemplate(w.template_id)?'':'disabled')+'>'+(findTemplate(w.template_id)?'维护选项':'已归档')+'</button></td></tr>';}).join('')+'</tbody></table></div>':'<div class="empty">尚无符合条件的短选项记录。功能上线后，复制提示词时才会开始累计。</div>');
+
         qsa('.word-maintain',$('usageWords')).forEach(function(button){button.onclick=function(){const word=words[Number(button.dataset.index)];closeDialogs();openEditor(word.template_id);toast('正在编辑当前草稿，可将“'+word.value+'”加入“'+word.field_label+'”的快捷选项，确认后发布');};});
       }
       function seedChips(){
@@ -1581,6 +1643,7 @@
         $('closeWorklist').addEventListener('click',function(){$('worklistDrawer').classList.remove('open');});
         $('clearWorklist').addEventListener('click',function(){data.worklists[currentUserKey()]=[];saveData();renderWorklist();renderLibrary();toast('本次使用清单已清空');});
         $('composerForm').addEventListener('submit',function(e){e.preventDefault();generatePrompt();});
+        $('copyTemplateOriginalBtn').addEventListener('click',copyTemplateOriginal);
         $('copyPromptBottomBtn').addEventListener('click',function(){const text=$('promptOutput').textContent;if(!state.generatedValues){toast('请先填写并生成完整提示词');return;}copyText(text,'完整提示词已复制');});
         $('feedbackThisTemplate').addEventListener('click',function(){const t=findTemplate(state.activeTemplate);if(t)startTargetFeedback(t,null,state.activeTemplateData||t);});
         $('feedbackArea').addEventListener('input',function(){state.feedbackTarget=this.value.trim()||null;});
