@@ -191,6 +191,7 @@ class FieldUsageInput(BaseModel):
 
 class EventInput(BaseModel):
     event_type: str
+    original_copy: bool = False
     template_id: str = Field(min_length=1, max_length=100)
     template_version: int | None = Field(default=None, ge=1)
     field_values: list[FieldUsageInput] = Field(default_factory=list,max_length=100)
@@ -724,14 +725,16 @@ async def set_preferences(preferences: dict, user=Depends(current_user)):
 
 @app.post('/events', status_code=201)
 async def add_event(payload: EventInput, user=Depends(current_user)):
+    if payload.original_copy and (payload.event_type != 'prompt_copy' or payload.field_values):
+        raise HTTPException(422, 'original copy cannot include field selections')
     if payload.event_type not in ('template_open', 'prompt_copy', 'version_select', 'favorite_add', 'favorite_remove'):
         raise HTTPException(422, 'invalid event type')
     async with app.state.db.acquire() as conn:
         exists = await conn.fetchval('SELECT EXISTS(SELECT 1 FROM shoe_workbench.templates WHERE id=$1 AND published_version IS NOT NULL AND archived_at IS NULL)', payload.template_id)
         if not exists:
             raise HTTPException(404, 'template not found')
-        await conn.execute('''INSERT INTO shoe_workbench.events(id,user_id,event_type,template_id,template_version)
-          VALUES($1,$2,$3,$4,$5)''', str(uuid.uuid4()),user[0].user_id,payload.event_type,payload.template_id,payload.template_version)
+        await conn.execute('''INSERT INTO shoe_workbench.events(id,user_id,event_type,template_id,template_version,original_copy)
+          VALUES($1,$2,$3,$4,$5,$6)''', str(uuid.uuid4()),user[0].user_id,payload.event_type,payload.template_id,payload.template_version,payload.original_copy)
         if payload.event_type=='prompt_copy' and payload.template_version and payload.field_values:
             version=await conn.fetchval('SELECT content FROM shoe_workbench.template_versions WHERE template_id=$1 AND version=$2',payload.template_id,payload.template_version)
             content=json_value(version) if version else {}
@@ -782,6 +785,7 @@ async def usage_dashboard(days: int=30,user=Depends(current_user)):
         AND t.archived_at IS NULL AND v.deleted_at IS NULL """
     async with app.state.db.acquire() as conn:
         totals=await conn.fetchrow("""SELECT count(DISTINCT e.user_id) AS active_users,
+            count(*) FILTER(WHERE e.event_type='prompt_copy' AND e.original_copy) AS original_copies,
             count(*) FILTER(WHERE e.event_type='template_open') AS opens,
             count(*) FILTER(WHERE e.event_type='prompt_copy') AS copies,
             count(*) FILTER(WHERE e.event_type='version_select') AS version_choices,
@@ -797,10 +801,12 @@ async def usage_dashboard(days: int=30,user=Depends(current_user)):
             count(*) FILTER(WHERE e.event_type='version_select') AS version_choices,
             count(*) FILTER(WHERE e.event_type='favorite_add') AS favorites_added,
             count(*) FILTER(WHERE e.event_type='favorite_remove') AS favorites_removed,
-            max(e.created_at) AS last_used"""+scope+"""
+            count(*) FILTER(WHERE e.event_type='prompt_copy' AND e.original_copy) AS original_copies,
+            max(e.created_at) FILTER(WHERE e.event_type IN ('template_open','prompt_copy','version_select')) AS last_used"""+scope+"""
             GROUP BY e.user_id,e.template_id,t.title,e.template_version,v.display_name
             ORDER BY copies DESC,opens DESC LIMIT 5000""",days)
         trend=await conn.fetch("""SELECT (e.created_at AT TIME ZONE 'Asia/Shanghai')::date AS day,e.user_id,e.template_id,
+            count(*) FILTER(WHERE e.event_type='prompt_copy' AND e.original_copy) AS original_copies,
             count(*) FILTER(WHERE e.event_type='template_open') AS opens,
             count(*) FILTER(WHERE e.event_type='prompt_copy') AS copies,count(DISTINCT e.user_id) AS users"""+scope+"""
             GROUP BY 1,e.user_id,e.template_id ORDER BY 1 LIMIT 20000""",days)
